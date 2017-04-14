@@ -3,7 +3,7 @@ import random
 import re
 
 START = """ig.module( 'game.levels.level0' )
-.requires( 'impact.image','game.entities.beeper','game.entities.tray','game.entities.karel','game.entities.trigger','game.entities.levelchange','game.entities.exit' )
+.requires( 'impact.image','game.entities.beeper','game.entities.tray','challenge.entities.karel','game.entities.trigger','game.entities.levelchange','game.entities.exit' )
 .defines(function(){
 LevelLevel0=/*JSON[*/"""
 END = """/*]JSON*/;
@@ -23,8 +23,8 @@ class ImpactMap:
     def __init__(self):
         self.impact_map = {}
 
-    def initialize(self):
-        with open('levels/level.json') as f:
+    def initialize(self, level_name):
+        with open('levels/' + level_name + '.json') as f:
             self.impact_map = json.loads(f.read())
         self.karel_initial_positions = self.get_initial_positions()
 
@@ -66,7 +66,7 @@ class ImpactMap:
         mx = from_map(x)
         my = from_map(y)
         for entity in self.impact_map["entities"]:
-            if entity["type"] in ["EntityKarel", "EntityBeeper", "EntityTray"]:
+            if entity["type"] in ["EntityKarel", "EntityTray"]: # EntityBeeper not here to prevent eventual infinite loops!
                 if entity["x"] == mx and entity["y"] == my:
                     return False
         return True
@@ -125,6 +125,7 @@ class ImpactMap:
                         entity["settings"]["capacity"],
                         entity["settings"]["required"],
                         entity["settings"]["initialBeepers"],
+                        entity["settings"]["owner"],
                     )
                 )
         return trays
@@ -161,7 +162,7 @@ class ImpactMap:
                 "y": from_map(y)
             }
             entities.append(beeper)
-        for y, x, capacity, required, num_beepers in world["trays"]:
+        for y, x, capacity, required, num_beepers, owner in world["trays"]:
             tray = {
                 "type": "EntityTray",
                 "x": from_map(x),
@@ -170,7 +171,7 @@ class ImpactMap:
                     "capacity": capacity,
                     "initialBeepers": num_beepers,
                     "required": required,
-                    "owner": ""
+                    "owner": owner
                 }
             }
             entities.append(tray)

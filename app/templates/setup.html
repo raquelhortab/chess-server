@@ -3,67 +3,51 @@
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet"
-      href="{{url_for('static', filename='media/css/app.css')}}">
-<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link href="/karel/challenge/app.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="app" id="choose-nickname">
-        <h1>Karel the robot multiplayer</h1>
-        <p class="lead">Choose your nickname</p>
-
-        <form class="form-inline" id="nickname-form">
-            <input class="form-control" type="text" id="nickname">
-            <input class="btn btn-primary" type="submit" value="Next">
-        </form>
-
-        <br>
-
-        <p>or</p>
-
-        <a href="{{url_for('main.run_game', game_id=game_id)}}?mode=tv" class="btn btn-default btn-lg" aria-label="Left Align">
-            <span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span>
-        </a>
-    </div>
-    <div class="app hidden" id="choose-karel">
-        <h1>Karel the robot multiplayer</h1>
-        <p class="lead"><strong id="greeter"></strong>, choose your karel's color</p>
+    <div class="app" id="choose-karel">
+        <p class="lead"><strong id="greeter">{{ nickname }}</strong>, choose your karel's color</p>
 
         <form id="handle-form" method="post" role="form">
             {{ form.hidden_tag() }}
             <div class="panel-body">
                 <div class="btn-group btn-group-justified btn-group-lg" data-toggle="buttons">
-                    <label class="btn btn-info active">
+                    <label class="btn btn-info">
                         <input type="radio" name="handle_radio" id="karel-blue" autocomplete="off">Blue
                     </label>
-                    <label class="btn btn-success active">
+                    <label class="btn btn-success">
                         <input type="radio" name="handle_radio" id="karel-green" autocomplete="off">Green
                     </label>
-                    <label class="btn btn-danger active">
+                    <label class="btn btn-danger">
                         <input type="radio" name="handle_radio" id="karel-red" autocomplete="off">Red
                     </label>
-                    <label class="btn btn-warning active">
+                    <label class="btn btn-warning">
                         <input type="radio" name="handle_radio" id="karel-yellow" autocomplete="off">Yellow
                     </label>
                 </div>
             </div>
             <input type="hidden" name="handle">
             <input type="hidden" name="game_id" value="{{ game_id }}">
-            <input type="hidden" name="nickname">
-            <input class="btn btn-primary btn-lg" type="submit" value="Finish">
+            <input type="hidden" name="nickname" value="{{ nickname }}">
+            <input type="hidden" name="pc_id" value="{{ pc_id }}">
+            <input class="btn btn-primary btn-lg" type="submit" value="Start">
         </form>
     </div>
 </div><!-- /.container -->
 {% endblock %}
 
 {% block scripts %}
-<script src="{{url_for('static', filename='media/js/jquery-3.1.1.min.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/socket.io-1.4.5.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/setup.js')}}"></script>
+<script src="/karel/challenge/ext/socket.io-1.7.3.min.js"></script>
+<script src="/karel/challenge/ext/jquery-3.1.1.min.js"></script>
+<script src="/karel/challenge/setup.js"></script>
 <script type="text/javascript">
     var game_id = "{{ game_id }}";
+    var nickname = "{{ nickname }}"
+    var pc_id = "{{ pc_id }}";
+    var players = {{ players|tojson|safe }};
 </script>
 {{super()}}
 {% endblock %}

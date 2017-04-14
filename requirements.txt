@@ -1,7 +1,6 @@
 amqp==2.1.4
 appdirs==1.4.0
 billiard==3.5.0.2
-celery==4.0.2
 click==6.6
 dominate==2.3.1
 enum-compat==0.0.2

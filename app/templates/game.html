@@ -2,66 +2,38 @@
 
 {% macro board(color) %}
 <div class="board-{{ color }}">
-    <p>S: <span class="board-steps">0</span>&nbsp;<strong>|</strong>&nbsp;B: <span class="board-beepers">0</span>&nbsp;<strong>|</strong>&nbsp;T: <span class="board-tray">0</span></p>
+    <p>Beepers: <span class="board-beepers">0</span></p>
 </div>
 {% endmacro %}
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet"
-      href="{{url_for('static', filename='media/css/app.css')}}">
-<link rel="stylesheet"
-      href="{{url_for('static', filename='media/css/codemirror.css')}}">
-<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link href="/karel/challenge/app.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="app">
-        <h1>#1 Tots contra tots!</h1>
-        <p class="lead">Aconsegueix mes beepers que els teus contrincants,<br>deixa'ls a la teva safata i arriba a la sortida el primer.</p>
-    </div>
-
     <div class="row">
         <div class="col-md-6">
+          <span style='float:left' id='karel-green-name' class='player-name'>-</span><span style='float:right' id='karel-yellow-name' class='player-name'>-</span>
             <div id="ref_canvas_container">
                 <canvas id='canvas'></canvas>
             </div>
+          <span style='float:left' id='karel-blue-name' class='player-name'>-</span><span style='float:right' id='karel-red-name' class='player-name'>-</span>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" style='display:none'>
             <form>
-                <div class="form-group">
-                    <textarea class="form-control" name="code-editor" id="code" rows="80" cols="20">{{ initial_code }}</textarea>
-                </div>
                 <div class="form-group">
                     <div class="btn-group" role="group">
                         <div>
-                            <input class="btn btn-success" type="button" id="execute_btn" value="Executa"/>
                             <input class="btn btn-warning" type="button" id="test_btn" value="Test"/>
-                            <input class="btn" type="button" id="clean" value="Neteja l'editor"/>
                         </div>
                     </div>
                 </div>
             </form>
-            <div class="alert alert-error" style="cursor: pointer ;display:none" id="error">
-                <button type="button" class="close" data-dismiss="alert" id="btn_dismiss">
-                    <i class="icon-remove" id="remove"></i>
-                </button>
-                <strong>
-                    <i class="icon-remove" id="error_msg"></i>
-                </strong>
-                <i class="icon-question-sign"></i>
-            </div>
-            <div class="alert alert-block alert-success" style="display:none" id="expl_error">
-                <strong>
-                    <i class="icon-ok" id="expl_text"></i>
-                </strong>
-                <button class="btn btn-small btn-success" onclick="expl_close();">D'acord</button>
-            </div>
-            <br/>
         </div>
     </div>
-    <div class="row">
+    <div class="row" style="display:none">
         <div class="col-md-3">
             {{ board("karel-blue") }}
         </div>
@@ -77,7 +49,7 @@
     </div>
     <div class="row">
         <div class="col-md-6">
-            <div id="scores">
+            <div id="scores" style="display:none">
                 <p id="karel-blue-pos"></p>
                 <p id="karel-blue-bag"></p>
                 <p id="karel-green-pos"></p>
@@ -94,8 +66,9 @@
   var game_mode = 'normal';
   var level_name = 'level0';
   var game_id = '{{ game_id }}';
+  var pc_id = '{{ pc_id }}';
   var handle = '{{ handle }}';
-  var nickname = '{{ nickname }}';
+  var players = {{ players|tojson|safe }};
   var max_instr = 10;
   var max_time = 100;
   var num_beepers = 100;
@@ -110,12 +83,10 @@
   }
 
 </script>
-<script src="{{url_for('static', filename='media/js/codemirror.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/javascript/javascript.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/socket.io-1.4.5.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/jquery-3.1.1.min.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/game.js')}}"></script>
-<script src="/lib/impact/impact.js"></script>
-<script src="/lib/game/main.js"></script>
+<script src="/karel/challenge/ext/socket.io-1.7.3.min.js"></script>
+<script src="/karel/challenge/ext/jquery-3.1.1.min.js"></script>
+<script src="/karel/challenge/game.js"></script>
+<script src="/karel/lib/impact/impact.js"></script>
+<script src="/karel/challenge/main.js"></script>
 {{super()}}
 {% endblock %}

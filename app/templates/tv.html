@@ -10,8 +10,6 @@
 {{super()}}
 <link rel="stylesheet"
       href="{{url_for('static', filename='media/css/app.css')}}">
-<link rel="stylesheet"
-      href="{{url_for('static', filename='media/css/codemirror.css')}}">
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 {% endblock %}
 
@@ -78,8 +76,6 @@
   }
 
 </script>
-<script src="{{url_for('static', filename='media/js/codemirror.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/javascript/javascript.js')}}"></script>
 <script src="{{url_for('static', filename='media/js/socket.io-1.4.5.js')}}"></script>
 <script src="{{url_for('static', filename='media/js/jquery-3.1.1.min.js')}}"></script>
 <script src="{{url_for('static', filename='media/js/tv.js')}}"></script>

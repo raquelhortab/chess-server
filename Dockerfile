@@ -7,9 +7,8 @@ ENV REDIS_URL=127.0.0.1
 RUN apt-get update
 RUN apt-get install -y python3 python-pip gunicorn supervisor git nginx redis-server
 
-COPY . /app
-
-RUN pip install -r /app/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY karel-arena.conf /etc/nginx/sites-available/
@@ -19,6 +18,7 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY gunicorn.conf /etc/supervisor/conf.d/gunicorn.conf
-COPY celery.conf /etc/supervisor/conf.d/celery.conf
+
+COPY . /app
 
 CMD ["/usr/bin/supervisord"]

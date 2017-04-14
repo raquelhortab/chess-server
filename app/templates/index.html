@@ -2,9 +2,7 @@
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet"
-      href="{{url_for('static', filename='media/css/app.css')}}">
-<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link href="/karel/challenge/app.css" rel="stylesheet">
 {% endblock %}
 
 
@@ -21,23 +19,8 @@
                 </div>
             {% endif %}
         {% endwith %}
-        <h1>Karel the robot multiplayer</h1>
-        <p class="lead">Create a game and invite up to 4 friends</p>
-
-        <form class="form-inline" id="start-form">
-            <label for="game-id" id="game-url">karel-arena.herokuapp.com/</label>
-            <input class="form-control" type="text" placeholder="qwer" id="game-id">
-            <input class="btn btn-primary" type="submit" value="Start">
-        </form>
     </div>
 
 </div><!-- /.container -->
 {% endblock %}
 
-{% block scripts %}
-<script type="text/javascript">
-</script>
-<script src="{{url_for('static', filename='media/js/jquery-3.1.1.min.js')}}"></script>
-<script src="{{url_for('static', filename='media/js/app.js')}}"></script>
-{{super()}}
-{% endblock %}

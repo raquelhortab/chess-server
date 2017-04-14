@@ -1,18 +1,8 @@
 import socketIO_client
-from celery import Celery
 from flask_socketio import emit
-
-celery = Celery("tasks", broker="redis://", backend="redis://")
-
 
 class DyingException(Exception):
     pass
-
-
-@celery.task
-def spawn_beeper(game_id):
-    with socketIO_client.SocketIO('localhost', 80, socketIO_client.LoggingNamespace) as socketIO:
-        socketIO.emit('spawn_beeper', {'game_id': game_id}, path='/game')
 
 
 class Karel:
@@ -41,15 +31,18 @@ class Karel:
         cornerColorIs=2, random=2
     )
 
-    def __init__(self, model, game_id, nickname, handle):
+    def __init__(self, model, game_id, pc_id, handle):
         self.karel_model = model
         self.game_id = game_id
-        self.nickname = nickname
+        self.pc_id = pc_id
         self.handle = handle
 
     def __send_command(self, command):
         msg = '{"handle": "%s", "command": "%s"}' % (self.handle, command)
         emit('command', msg, room=self.game_id)
+
+    def declareWinner(self):
+        emit('winner', self.handle, room=self.game_id)
 
     def turnLeft(self):
         self.karel_model.turn_left(self.handle)
@@ -135,13 +128,13 @@ class Karel:
     def exit(self):
         if self.karel_model.exit(self.handle):
             self.__send_command("exit")
+            self.declareWinner()
         else:
             self.__send_command("die")
 
     def pickBeeper(self):
         if self.karel_model.pick_beeper(self.handle):
             self.__send_command("pickBeeper")
-            spawn_beeper.apply_async(args=[self.game_id, ], countdown=10)
         else:
             self.__send_command("die")
 

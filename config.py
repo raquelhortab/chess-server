@@ -9,9 +9,6 @@ class Config:
     REDIS_URL = os.environ['REDIS_URL']
     REDIS_CHAN = 'karel'
 
-    CELERY_BROKER_URL = 'redis://localhost:6379'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-
     @staticmethod
     def init_app(app):
         pass
@@ -19,6 +16,14 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    @classmethod
+    def init_app(cls, app):
+        # log to file
+        import logging
+        from logging import FileHandler
+        file_handler = FileHandler('/var/log/karel_arena.log')
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
 
 
 class TestingConfig(Config):

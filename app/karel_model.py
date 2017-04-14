@@ -3,16 +3,17 @@ import copy
 from pykarel.karel.beepers import Beepers
 from pykarel.karel.exits import Exits
 from pykarel.karel.karel_constants import KAREL_EAST, KAREL_WEST, KAREL_NORTH, KAREL_SOUTH
-from pykarel.karel.trays import Trays
+from pykarel.karel.trays import Trays, Tray
 from pykarel.karel.walls import Walls
+from flask import current_app
 
 
 def error(txt):
-    print(txt)
+    current_app.logger.error(txt)
 
 
 def log(txt):
-    print(txt)
+    current_app.logger.info(txt)
 
 
 class KarelEntity:
@@ -27,6 +28,39 @@ class KarelEntity:
         return "Karel '{}' at {}, {} facing {} having {} beepers".format(self.handle, self.row, self.col, self.dir,
                                                                          len(self.bag))
 
+class OwnedTray(Tray):
+    def __init__(self, capacity, required, initial_beepers, owner):
+        self.capacity = capacity
+        self.required = required
+        self.num_beepers = initial_beepers
+        self.owner = owner
+
+    def is_full(self):
+        return self.capacity == self.num_beepers
+
+class OwnedTrays(Trays):
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.trays = [[None for i in range(cols)] for j in range(rows)]
+        self.trays_by_owner = {}
+
+    def add_tray(self, row, col, capacity, required, initial_beepers, owner):
+        new_tray = OwnedTray(capacity, required, initial_beepers, owner)
+        self.trays[row][col] = new_tray
+        if not owner in self.trays_by_owner:
+          self.trays_by_owner[owner] = []
+        self.trays_by_owner[owner].append(new_tray)
+
+    def owner_trays_full(self, owner):
+        return all(tray.is_full() for tray in self.trays_by_owner[owner])
+
+    def dump(self):
+        for i in range(self.cols):
+            for j in range(self.rows):
+                if self.trays[i][j] != None:
+                    tray = self.trays[i][j]
+                    yield i, j, tray.capacity, tray.required, tray.num_beepers, tray.owner
 
 class KarelModel:
     def __init__(self, logger):
@@ -41,7 +75,8 @@ class KarelModel:
         self.cols = 0
 
     def exit(self, handle):
-        if self.exits.exit_present(self.karels[handle].row, self.karels[handle].col):
+        if self.exits.exit_present(self.karels[handle].row, self.karels[handle].col) and \
+          self.trays.owner_trays_full(handle):
             return True
         return False
 
@@ -128,18 +163,19 @@ class KarelModel:
     def put_beeper_in_tray(self, handle):
         row, col = self.__get_pos(handle)
         if self.trays.tray_present(row, col):
-            if len(self.karels[handle].bag) > 0:
+            if len(self.karels[handle].bag) > 0 and not self.trays.tray_is_full(row, col):
                 self.trays.put_beeper(row, col)
                 self.karels[handle].bag.pop()
                 return True
             else:
-                error("Not carrying any beeper")
+                error("Not carrying any beeper or full tray")
                 return False
         else:
             error("No trays present")
             return False
 
     def pick_beeper_from_tray(self, handle):
+        '''
         row, col = self.__get_pos(handle)
         if self.trays.tray_present(row, col):
             self.trays.pick_beeper(row, col)
@@ -148,6 +184,8 @@ class KarelModel:
         else:
             error("No trays present")
             return False
+        '''
+        return False # disabled for now to prevent abuse
 
     def return_beeper(self, handle):
         if len(self.karels[handle].bag) > 0:
@@ -230,7 +268,7 @@ class KarelModel:
 
         self.beepers = Beepers(self.rows, self.cols)
         self.walls = Walls(self.rows, self.cols)
-        self.trays = Trays(self.rows, self.cols)
+        self.trays = OwnedTrays(self.rows, self.cols)
         self.exits = Exits(self.rows, self.cols)
 
         for beeper in world["beepers"]:
@@ -240,7 +278,7 @@ class KarelModel:
             self.walls.add_wall(wall[0], wall[1])
 
         for tray in world["trays"]:
-            self.trays.add_tray(tray[0], tray[1], tray[2], tray[3], tray[4])
+            self.trays.add_tray(tray[0], tray[1], tray[2], tray[3], tray[4], tray[5])
 
         for exit in world["exits"]:
             self.exits.add_exit(exit[0], exit[1])

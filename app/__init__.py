@@ -9,7 +9,6 @@ from flask_socketio import SocketIO
 from werkzeug.routing import BaseConverter
 
 from app.game import GameNamespace
-from app.setup import SetupNamespace
 from config import config
 
 bootstrap = Bootstrap()
@@ -43,7 +42,6 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    socketio.on_namespace(SetupNamespace(redis, '/setup'))
     socketio.on_namespace(GameNamespace(redis, '/game'))
 
     return app, socketio
