@@ -5,7 +5,6 @@ import ast
 from flask import current_app
 from flask import flash
 from flask import render_template, send_from_directory
-from flask import url_for
 from flask import request
 from werkzeug.utils import redirect
 
@@ -24,7 +23,7 @@ def run_game(game_id):
     pc_id = request.args.get('pc_id')
     if len(players) >= 4 and not(pc_id in players):
         flash("This game is full, start a new one", "errors")
-        return redirect(url_for('main.index'))
+        return render_template('index.html')
 
     current_app.logger.error(players)
 
