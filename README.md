@@ -11,7 +11,7 @@ $ docker build -t karel-arena .
 ## Run the docker container
 
 ```
-$ docker run -p 80:80 karel-arena
+$ docker run -d -p 2080:80 karel-arena
 ```
 
 And redirect the browser to `http://127.0.0.1`.

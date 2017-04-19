@@ -60,8 +60,8 @@ class GameNamespace(Namespace):
                     steps -= 1
                     if steps < 0:
                       raise DyingException('Too many steps. Endless loop?')
-            except DyingException as e:
-                emit("error", str(e), room=data["game_id"])
+            except (DyingException, Exception) as e:
+                emit("error", (str(e), data['handle']), room=data["game_id"])
 
             if True:  # TODO: This code should be executed when the player didn't wins
                 for beeper in iter(partial(karel_model.return_beeper, data["handle"]), None):
