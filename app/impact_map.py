@@ -2,13 +2,10 @@ import json
 import random
 import re
 
-START = """ig.module( 'game.levels.level0' )
-.requires( 'impact.image','game.entities.beeper','game.entities.tray','challenge.entities.karel','game.entities.trigger','game.entities.levelchange','game.entities.exit' )
-.defines(function(){
-LevelLevel0=/*JSON[*/"""
+START = """LevelLevel0=/*JSON[*/"""
 END = """/*]JSON*/;
 LevelLevel0Resources=[new ig.Image('media/tileset.png')];
-});"""
+"""
 
 
 def to_map(coord):
