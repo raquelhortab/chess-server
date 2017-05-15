@@ -10,7 +10,7 @@ class Karel:
         move=1, turnLeft=1, putBeeper=1, pickBeeper=1,
         turnRight=2, turnAround=2, paintCorner=2,
         putBeeperInTray=1, pickBeeperFromTray=1,
-        exit=1
+        exit=1, removeWall=1
     )
 
     predicates = dict(
@@ -131,6 +131,13 @@ class Karel:
             self.declareWinner()
         else:
             self.__send_command("die")
+
+    def removeWall(self):
+        if self.karel_model.remove_wall(self.handle):
+            self.__send_command("removeWall")
+        else:
+            self.__send_command("die")
+            raise DyingException("Can't remove wall")
 
     def pickBeeper(self):
         if self.karel_model.pick_beeper(self.handle):

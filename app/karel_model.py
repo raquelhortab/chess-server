@@ -62,6 +62,14 @@ class OwnedTrays(Trays):
                     tray = self.trays[i][j]
                     yield i, j, tray.capacity, tray.required, tray.num_beepers, tray.owner
 
+class RemovableWalls(Walls):
+    def remove_wall(self, row, col):
+        if col < 0 or col >= self.cols:
+            return False
+        if row < 0 or row >= self.rows:
+            return False
+        self.walls[row][col] = 0
+
 class KarelModel:
     def __init__(self, logger):
         self.logger = logger
@@ -80,18 +88,18 @@ class KarelModel:
             return True
         return False
 
+    def remove_wall(self, handle):
+        row, col = self.__get_pos(handle)
+        if self.front_is_clear(handle):
+            error("Front is clear")
+            return False
+        else:
+            new_row, new_col = self.__next_pos(handle)
+            self.walls.remove_wall(new_row, new_col)
+            return True
+
     def move(self, handle):
-        new_row = self.karels[handle].row
-        new_col = self.karels[handle].col
-        dir = self.karels[handle].dir
-        if self.karels[handle].dir == KAREL_EAST:
-            new_col += 1
-        elif self.karels[handle].dir == KAREL_WEST:
-            new_col -= 1
-        elif self.karels[handle].dir == KAREL_NORTH:
-            new_row -= 1
-        elif self.karels[handle].dir == KAREL_SOUTH:
-            new_row += 1
+        new_row, new_col = self.__next_pos(handle)
         if self.walls.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col):
             self.karels[handle].row = new_row
             self.karels[handle].col = new_col
@@ -245,8 +253,7 @@ class KarelModel:
     def facing_west(self, handle):
         return self.karels[handle].dir == KAREL_WEST
 
-    def front_is_clear(self, handle):
-        log('frontIsClear')
+    def __next_pos(self, handle):
         new_row = self.karels[handle].row
         new_col = self.karels[handle].col
         if self.karels[handle].dir is KAREL_EAST:
@@ -259,6 +266,11 @@ class KarelModel:
             new_row += 1
         else:
             error("invalid dir: {}".format(self.karels[handle].dir))
+        return new_row, new_col
+
+
+    def front_is_clear(self, handle):
+        new_row, new_col = self.__next_pos(handle)
         ret = self.walls.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
         return ret
 
@@ -267,7 +279,7 @@ class KarelModel:
         self.cols = world["dimension"][1]
 
         self.beepers = Beepers(self.rows, self.cols)
-        self.walls = Walls(self.rows, self.cols)
+        self.walls = RemovableWalls(self.rows, self.cols)
         self.trays = OwnedTrays(self.rows, self.cols)
         self.exits = Exits(self.rows, self.cols)
 

@@ -1,39 +1,27 @@
 function main() {
-  repeat(7){
-    pickMove();
-    turnLeft();
-    pickMove();
-    turnRight();
-  }
-  pickMove();
-  turnLeft();
-  pickMove();
-  turnLeft();
-  pickMove();
-  turnLeft();
-  pickMove();
-  vesACasa();
-  
-}
-function vesACasa(){
-  while(frontIsClear()){
+  while( noTrayPresent() ){
     pickMove();
   }
-  turnRight();
-  while(noTrayPresent()){
-    pickMove();
+  if(trayNotFull()){
+    while(beepersInBag()){
+      putBeeperInTray();
+    }
   }
-  while(beepersInBag()){
-    putBeeperInTray();
-  }
-  turnRight();
   while(noExitPresent()){
     pickMove();
   }
+  exit();
 }
+
 function pickMove() {
-  if(beepersPresent()) {
-    pickBeeper();
-  }
-  move();
+    move();
+    if( frontIsBlocked() ){
+       turnRight();
+    }
+    if( frontIsBlocked() ){
+       turnRight();
+    }
+    if( beepersPresent() ){
+       pickBeeper();
+    }
 }

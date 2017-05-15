@@ -1,6 +1,8 @@
 import json
 import random
 import re
+from flask import current_app
+
 
 START = """LevelLevel0=/*JSON[*/"""
 END = """/*]JSON*/;
@@ -39,6 +41,11 @@ class ImpactMap:
             if layer["name"] == "collision":
                 return layer
 
+    def _get_bg_layer(self):
+        for layer in self.impact_map["layer"]:
+            if layer["name"] != "collision":
+                return layer
+
     def get_walls(self):
         collision_layer = self._get_collision_layer()
         rows, cols = self.get_dimension()
@@ -58,7 +65,7 @@ class ImpactMap:
 
     def _valid_place(self, x, y):
         collision_layer = self._get_collision_layer()
-        if collision_layer["data"][x][y] == 1:
+        if collision_layer["data"][y][x] == 1:
             return False
         mx = from_map(x)
         my = from_map(y)
@@ -186,6 +193,17 @@ class ImpactMap:
 
         self.impact_map["entities"] = entities
 
+        rows, cols = self.get_dimension()
+        collision_layer = self._get_collision_layer()
+        bg_layer = self._get_bg_layer()
+        for i in range(0, cols):
+            for j in reversed(range(0, rows)):
+                collision_layer["data"][i][j] = 0
+                if bg_layer["data"][i][j] == 4:
+                  bg_layer["data"][i][j] = 2 # put all walls as floor
+        for x,y in world["walls"]:
+            collision_layer['data'][x][y] = 1
+            bg_layer["data"][x][y] = 4
 
 if __name__ == '__main__':
     m = Map()
