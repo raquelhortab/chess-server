@@ -38,8 +38,11 @@ def run_game(game_id):
 
     if tv_mode:
         return render_template(
-            'tv.html',
-            game_id=game_id
+            'game.html',
+            game_id=game_id,
+            pc_id=pc_id,
+            handle='tv',
+            players=players
         )
 
     if len(players) > 0 and pc_id in players:
