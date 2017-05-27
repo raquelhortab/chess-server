@@ -21,7 +21,7 @@ def run_game(game_id):
     players = redis.hgetall(key_pl)
     nickname = request.args.get('nickname')
     pc_id = request.args.get('pc_id')
-    if len(players) >= 4 and not(pc_id in players):
+    if len(players) >= 4 and not(pc_id in players) and not(tv_mode):
         flash("This game is full, start a new one", "errors")
         return render_template('index.html')
 
