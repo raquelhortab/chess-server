@@ -28,6 +28,7 @@ class Karel:
         facingEast=1, notFacingEast=1,
         facingSouth=1, notFacingSouth=1,
         facingWest=1, notFacingWest=1,
+        isRemovableWall=1,
         cornerColorIs=2, random=2
     )
 
@@ -138,6 +139,9 @@ class Karel:
         else:
             self.__send_command("die")
             raise DyingException("Can't remove wall")
+
+    def isRemovableWall(self):
+        return self.karel_model.is_removable_wall(self.handle)
 
     def pickBeeper(self):
         if self.karel_model.pick_beeper(self.handle):

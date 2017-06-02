@@ -47,14 +47,24 @@ class ImpactMap:
                 return layer
 
     def get_walls(self):
-        collision_layer = self._get_collision_layer()
+        bg_layer = self._get_bg_layer()
         rows, cols = self.get_dimension()
         walls = []
         for i in range(0, cols):
             for j in reversed(range(0, rows)):
-                if collision_layer["data"][i][j] == 1:
+                if bg_layer["data"][i][j] == 4:
                     walls.append((i, j))
         return walls
+
+    def get_stones(self):
+        bg_layer = self._get_bg_layer()
+        rows, cols = self.get_dimension()
+        stones = []
+        for i in range(0, cols):
+            for j in reversed(range(0, rows)):
+                if bg_layer["data"][i][j] == 3:
+                    stones.append((i, j))
+        return stones
 
     def get_beepers(self):
         beepers = []
@@ -150,6 +160,7 @@ class ImpactMap:
         world = {}
         world["dimension"] = self.get_dimension()
         world["walls"] = self.get_walls()
+        world["stones"] = self.get_stones()
         world["beepers"] = self.get_beepers()
         world["karels"] = self.get_karels()
         world["trays"] = self.get_trays()
@@ -204,6 +215,9 @@ class ImpactMap:
         for x,y in world["walls"]:
             collision_layer['data'][x][y] = 1
             bg_layer["data"][x][y] = 4
+        for x,y in world["stones"]:
+            collision_layer['data'][x][y] = 1
+            bg_layer["data"][x][y] = 3
 
 if __name__ == '__main__':
     m = Map()

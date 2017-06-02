@@ -77,6 +77,7 @@ class KarelModel:
         self.trays = None
         self.exits = None
         self.walls = None
+        self.stones = None
         self.karels = {}
         self.karels_initial = {}
         self.rows = 0
@@ -94,13 +95,17 @@ class KarelModel:
             error("Front is clear")
             return False
         else:
-            new_row, new_col = self.__next_pos(handle)
-            self.walls.remove_wall(new_row, new_col)
-            return True
+            if self.is_removable_wall(handle):
+                new_row, new_col = self.__next_pos(handle)
+                self.walls.remove_wall(new_row, new_col)
+                return True
+            else:
+                error("Stone wall")
+                return False
 
     def move(self, handle):
         new_row, new_col = self.__next_pos(handle)
-        if self.walls.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col):
+        if self.front_is_clear(handle):
             self.karels[handle].row = new_row
             self.karels[handle].col = new_col
             return True
@@ -220,8 +225,14 @@ class KarelModel:
     def get_num_beepers(self, handle):
         return len(self.karels[handle].bag)
 
-    def has_wall(self, row, col):
-        return self.walls.get_wall(row, col)
+    def is_removable_wall(self, handle):
+        new_row, new_col = self.__next_pos(handle)
+        # only thing that returns false is a stone or limit
+        if new_col < 0 or new_col >= self.stones.cols:
+            return False
+        if new_row < 0 or new_row >= self.stones.rows:
+            return False
+        return self.stones.walls[new_row][new_col] != 1
 
     def beepers_present(self, handle):
         return self.beepers.beeper_present(self.get_karel_row(handle), self.get_karel_col(handle))
@@ -271,7 +282,9 @@ class KarelModel:
 
     def front_is_clear(self, handle):
         new_row, new_col = self.__next_pos(handle)
-        ret = self.walls.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+        wall_free = self.walls.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+        stone_free = self.stones.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+        ret = wall_free and stone_free
         return ret
 
     def load_world(self, world):
@@ -280,6 +293,7 @@ class KarelModel:
 
         self.beepers = Beepers(self.rows, self.cols)
         self.walls = RemovableWalls(self.rows, self.cols)
+        self.stones = Walls(self.rows, self.cols)
         self.trays = OwnedTrays(self.rows, self.cols)
         self.exits = Exits(self.rows, self.cols)
 
@@ -288,6 +302,9 @@ class KarelModel:
 
         for wall in world["walls"]:
             self.walls.add_wall(wall[0], wall[1])
+
+        for stone in world["stones"]:
+            self.stones.add_wall(stone[0], stone[1])
 
         for tray in world["trays"]:
             self.trays.add_tray(tray[0], tray[1], tray[2], tray[3], tray[4], tray[5])
@@ -315,6 +332,9 @@ class KarelModel:
         world["walls"] = []
         for wall in self.walls.dump():
             world["walls"].append(wall)
+        world["stones"] = []
+        for stone in self.stones.dump():
+            world["stones"].append(stone)
         world["karels"] = []
         karel_direction = dict((
             (KAREL_EAST, "EAST"),
