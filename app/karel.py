@@ -10,7 +10,7 @@ class Karel:
         move=1, turnLeft=1, putBeeper=1, pickBeeper=1,
         turnRight=2, turnAround=2, paintCorner=2,
         putBeeperInTray=1, pickBeeperFromTray=1,
-        exit=1, removeWall=1
+        exit=1, removeWall=1, createWall=1
     )
 
     predicates = dict(
@@ -53,17 +53,47 @@ class Karel:
         self.karel_model.turn_right(self.handle)
         self.__send_command("turnRight")
 
+    def turnAround(self):
+        self.karel_model.turn_right(self.handle)
+        self.karel_model.turn_right(self.handle)
+        self.__send_command("turnRight")
+        self.__send_command("turnRight")
+
     def frontIsClear(self):
         return self.karel_model.front_is_clear(self.handle)
 
     def frontIsBlocked(self):
         return not self.karel_model.front_is_clear(self.handle)
 
+    def leftIsClear(self):
+        self.karel_model.turn_left(self.handle)
+        response = self.karel_model.front_is_clear(self.handle)
+        self.karel_model.turn_right(self.handle)
+        return response
+
+    def rightIsClear(self):
+        self.karel_model.turn_right(self.handle)
+        response = self.karel_model.front_is_clear(self.handle)
+        self.karel_model.turn_left(self.handle)
+        return response
+
+    def leftIsBlocked(self):
+        return not self.leftIsClear()
+
+    def rightIsBlocked(self):
+        return not self.rightIsClear()
+
     def beepersPresent(self):
         return self.karel_model.beepers_present(self.handle)
 
+    def noBeepersPresent(self):
+        return not self.beepersPresent()
+
     def beepersInBag(self):
         return bool(self.karel_model.get_num_beepers(self.handle))
+
+    def noBeepersInBag(self):
+        return not self.beepersInBag()
 
     def trayPresent(self):
         return self.karel_model.tray_present(self.handle)
@@ -139,6 +169,13 @@ class Karel:
         else:
             self.__send_command("die")
             raise DyingException("Can't remove wall")
+
+    def createWall(self):
+        if self.karel_model.create_wall(self.handle):
+            self.__send_command("createWall")
+        else:
+            self.__send_command("die")
+            raise DyingException("Can't create wall")
 
     def isRemovableWall(self):
         return self.karel_model.is_removable_wall(self.handle)

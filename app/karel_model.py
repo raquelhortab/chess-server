@@ -89,6 +89,16 @@ class KarelModel:
             return True
         return False
 
+    def create_wall(self, handle):
+        row, col = self.__get_pos(handle)
+        if not self.front_is_clear(handle):
+            error("Front is not empty")
+            return False
+        else:
+            new_row, new_col = self.__next_pos(handle)
+            self.walls.add_wall(new_row, new_col)
+            return True
+
     def remove_wall(self, handle):
         row, col = self.__get_pos(handle)
         if self.front_is_clear(handle):
