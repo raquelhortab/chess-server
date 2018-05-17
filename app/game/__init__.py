@@ -28,16 +28,24 @@ class GameNamespace(Namespace):
 
     def on_spawn_beeper(self, data):
         if random.randint(1, 4) == 2: # accept 25% of requests
+            bomb = None
             current_app.logger.error(data["game_id"] + ' spawn')
             with RedLock("redlock:{}".format(data["game_id"])):
                 map = ImpactMap()
                 map_data = self.redis.get(data["game_id"])
                 map.load(map_data)
                 beeper = map.spawn_beeper()
+                if random.randint(1, 10) == 2: # accept 2.5% of requests
+                  current_app.logger.error(data["game_id"] + ' spawnbomb')
+                  bomb = map.spawn_bomb()
                 self.redis.set(data["game_id"], json.dumps(map.impact_map))
             msg = {"handle": "common", "command": "spawnBeeper",
                    "params": {"x": beeper["x"], "y": beeper["y"]}}
             emit("command", json.dumps(msg), room=data["game_id"])
+            if bomb:
+              msg = {"handle": "common", "command": "spawnBomb",
+                     "params": {"x": bomb["x"], "y": bomb["y"]}}
+              emit("command", json.dumps(msg), room=data["game_id"])
 
 
     def on_execute(self, data):
@@ -63,7 +71,7 @@ class GameNamespace(Namespace):
             except (DyingException, Exception) as e:
                 emit("error", (str(e), data['handle']), room=data["game_id"])
 
-            if True:  # TODO: This code should be executed when the player didn't wins
+            if True:  # After the code, any remaining beeper is returned and the map saved
                 for beeper in iter(partial(karel_model.return_beeper, data["handle"]), None):
                     msg = {"handle": data["handle"], "command": "spawnBeeper",
                            "params": {"x": beeper[1] * 24, "y": beeper[0] * 24}}

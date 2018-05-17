@@ -70,6 +70,13 @@ class RemovableWalls(Walls):
             return False
         self.walls[row][col] = 0
 
+class Bombs(RemovableWalls):
+    def add_bomb(self, row, col):
+        self.add_wall(row, col)
+
+    def remove_bomb(self, row, col):
+        ok = self.remove_wall(row, col)
+
 class KarelModel:
     def __init__(self, logger):
         self.logger = logger
@@ -78,6 +85,7 @@ class KarelModel:
         self.exits = None
         self.walls = None
         self.stones = None
+        self.bombs = None
         self.karels = {}
         self.karels_initial = {}
         self.rows = 0
@@ -112,6 +120,11 @@ class KarelModel:
             else:
                 error("Stone wall")
                 return False
+
+    def explode_bomb(self, handle):
+        new_row, new_col = self.__next_pos(handle)
+        self.bombs.remove_bomb(new_row, new_col)
+        return True
 
     def move(self, handle):
         new_row, new_col = self.__next_pos(handle)
@@ -210,6 +223,16 @@ class KarelModel:
         '''
         return False # disabled for now to prevent abuse
 
+    def convert_beeper_into_bomb(self, handle):
+        row, col = self.__get_pos(handle)
+        if len(self.karels[handle].bag) > 0:
+            self.bombs.add_bomb(row, col)
+            self.karels[handle].bag.pop()
+            return True
+        else:
+            error("Not carrying any beeper")
+            return False
+
     def return_beeper(self, handle):
         if len(self.karels[handle].bag) > 0:
             beeper_pos = self.karels[handle].bag.pop()
@@ -297,6 +320,10 @@ class KarelModel:
         ret = wall_free and stone_free
         return ret
 
+    def front_is_bomb(self, handle):
+        new_row, new_col = self.__next_pos(handle)
+        return not self.bombs.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+
     def load_world(self, world):
         self.rows = world["dimension"][0]
         self.cols = world["dimension"][1]
@@ -306,6 +333,7 @@ class KarelModel:
         self.stones = Walls(self.rows, self.cols)
         self.trays = OwnedTrays(self.rows, self.cols)
         self.exits = Exits(self.rows, self.cols)
+        self.bombs = Bombs(self.rows, self.cols)
 
         for beeper in world["beepers"]:
             self.beepers.put_beeper(beeper[0], beeper[1])
@@ -321,6 +349,9 @@ class KarelModel:
 
         for exit in world["exits"]:
             self.exits.add_exit(exit[0], exit[1])
+
+        for bomb in world["bombs"]:
+            self.bombs.add_bomb(bomb[0], bomb[1])
 
         karel_direction = dict((
             ("EAST", KAREL_EAST),
@@ -339,6 +370,9 @@ class KarelModel:
         world["beepers"] = []
         for beeper in self.beepers.dump():
             world["beepers"].append(beeper)
+        world["bombs"] = []
+        for bomb in self.bombs.dump():
+            world["bombs"].append(bomb)
         world["walls"] = []
         for wall in self.walls.dump():
             world["walls"].append(wall)

@@ -73,6 +73,16 @@ class ImpactMap:
                 beepers.append((to_map(entity["y"]), to_map(entity["x"])))
         return beepers
 
+    def get_bombs(self):
+        bombs = []
+        for entity in self.impact_map["entities"]:
+            if entity["type"] == "EntityBomb":
+                bombs.append((to_map(entity["y"]), to_map(entity["x"])))
+        return bombs
+
+    def allows_bombs(self):
+        return "allows_bombs" in self.impact_map and self.impact_map["allows_bombs"]
+
     def _valid_place(self, x, y):
         collision_layer = self._get_collision_layer()
         if collision_layer["data"][y][x] == 1:
@@ -103,6 +113,17 @@ class ImpactMap:
         }
         self.impact_map["entities"].append(beeper)
         return beeper
+
+    def spawn_bomb(self):
+        if self.allows_bombs():
+          x, y = self._pick_random_position()
+          bomb = {
+              "type": "EntityBomb",
+              "x": from_map(x),
+              "y": from_map(y),
+          }
+          self.impact_map["entities"].append(bomb)
+          return bomb
 
     def get_initial_positions(self):
         karels = {}
@@ -165,11 +186,13 @@ class ImpactMap:
         world["karels"] = self.get_karels()
         world["trays"] = self.get_trays()
         world["exits"] = self.get_exits()
+        world["bombs"] = self.get_bombs()
         return world
 
     def from_compiler(self, world):
-        entities_to_clear = ["EntityBeeper", "EntityKarel", "EntityTray"]
+        entities_to_clear = ["EntityBeeper", "EntityKarel", "EntityTray", "EntityBomb"]
         entities = [e for e in self.impact_map["entities"] if e["type"] not in entities_to_clear]
+
         for y, x in world["beepers"]:
             beeper = {
                 "type": "EntityBeeper",
@@ -177,6 +200,13 @@ class ImpactMap:
                 "y": from_map(y)
             }
             entities.append(beeper)
+        for y, x in world["bombs"]:
+            bomb = {
+                "type": "EntityBomb",
+                "x": from_map(x),
+                "y": from_map(y)
+            }
+            entities.append(bomb)
         for y, x, capacity, required, num_beepers, owner in world["trays"]:
             tray = {
                 "type": "EntityTray",

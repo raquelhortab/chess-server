@@ -10,7 +10,8 @@ class Karel:
         move=1, turnLeft=1, putBeeper=1, pickBeeper=1,
         turnRight=2, turnAround=2, paintCorner=2,
         putBeeperInTray=1, pickBeeperFromTray=1,
-        exit=1, removeWall=1, createWall=1
+        exit=1, removeWall=1, createWall=1,
+        convertBeeperIntoMine=1
     )
 
     predicates = dict(
@@ -150,6 +151,13 @@ class Karel:
         return not self.karel_model.facing_west(self.handle)
 
     def move(self):
+        if self.karel_model.front_is_bomb(self.handle):
+            self.karel_model.explode_bomb(self.handle)
+            self.__send_command("move")
+            self.__send_command("removeBomb")
+            self.__send_command("die")
+            raise DyingException("Boom!")
+
         if self.karel_model.move(self.handle):
             self.__send_command("move")
         else:
@@ -215,6 +223,13 @@ class Karel:
 
     def respawn(self, handle):
         self.karel_model.respawn(handle)
+
+    def convertBeeperIntoMine(self):
+        if self.karel_model.convert_beeper_into_bomb(self.handle):
+            self.__send_command("convertBeeperIntoMine")
+        else:
+            self.__send_command("die")
+            raise DyingException("No beepers to convert")
 
 
 INFINITY = 100000000
