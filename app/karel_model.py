@@ -48,6 +48,9 @@ class OwnedTrays(Trays):
           self.trays_by_owner[owner] = []
         self.trays_by_owner[owner].append(new_tray)
 
+    def is_owner(self, row, col, owner):
+        return owner == self.trays[row][col].owner
+
     def owner_trays_full(self, owner):
         return all(tray.is_full() for tray in self.trays_by_owner[owner])
 
@@ -269,6 +272,9 @@ class KarelModel:
 
     def tray_complete(self, handle):
         return self.trays.tray_is_complete(self.get_karel_row(handle), self.get_karel_col(handle))
+
+    def tray_is_mine(self, handle):
+        return self.trays.is_owner(self.get_karel_row(handle), self.get_karel_col(handle), handle)
 
     def exit_present(self, handle):
         return self.exits.exit_present(self.get_karel_row(handle), self.get_karel_col(handle))

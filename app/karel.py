@@ -25,6 +25,7 @@ class Karel:
         trayFull=1, trayNotFull=1,
         trayEmpty=1, trayNotEmpty=1,
         trayComplete=1, trayNotComplete=1,
+        trayIsMine=1,
         exitPresent=1, noExitPresent=1,
         facingNorth=1, notFacingNorth=1,
         facingEast=1, notFacingEast=1,
@@ -120,6 +121,13 @@ class Karel:
 
     def trayNotComplete(self):
         return not self.karel_model.tray_complete(self.handle)
+
+    def trayIsMine(self):
+        if self.trayPresent():
+            return self.karel_model.tray_is_mine(self.handle)
+        else:
+            self.__send_command("die")
+            raise DyingException("No trays present")
 
     def exitPresent(self):
         return self.karel_model.exit_present(self.handle)
