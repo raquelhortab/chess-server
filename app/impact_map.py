@@ -83,6 +83,10 @@ class ImpactMap:
     def allows_bombs(self):
         return "allows_bombs" in self.impact_map and self.impact_map["allows_bombs"]
 
+    def allows_black_karel(self):
+        #return True
+        return "allows_black_karel" in self.impact_map and self.impact_map["allows_black_karel"]
+
     def _valid_place(self, x, y):
         collision_layer = self._get_collision_layer()
         if collision_layer["data"][y][x] == 1:
@@ -124,6 +128,27 @@ class ImpactMap:
           }
           self.impact_map["entities"].append(bomb)
           return bomb
+
+    def spawn_black_karel(self):
+        if self.allows_black_karel():
+          x, y = self._pick_random_position()
+          black = {
+              "type": "EntityKarel",
+              "x": from_map(x),
+              "y": from_map(y),
+              "settings": {
+                  "facing": "EAST",
+                  "name": "karel-black"
+              }
+          }
+          self.impact_map["entities"].append(black)
+          return black
+
+    def kill_black_karel(self):
+        for entity in self.impact_map["entities"]:
+          if entity["type"] == "EntityKarel" and entity["settings"]["name"] == 'karel-black':
+            self.impact_map["entities"].remove(entity)
+
 
     def get_initial_positions(self):
         karels = {}
@@ -221,6 +246,8 @@ class ImpactMap:
             }
             entities.append(tray)
         for name, y, x, dir in world["karels"]: # :S
+            if name == 'karel-black':
+              continue
             karel = {
                 "type": "EntityKarel",
                 "x": from_map(x),

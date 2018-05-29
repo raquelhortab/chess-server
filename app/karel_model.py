@@ -12,10 +12,6 @@ def error(txt):
     current_app.logger.error(txt)
 
 
-def log(txt):
-    current_app.logger.info(txt)
-
-
 class KarelEntity:
     def __init__(self, handle, row, col, dir):
         self.handle = handle
@@ -141,16 +137,12 @@ class KarelModel:
         new_d = self.karels[handle].dir
         if self.karels[handle].dir == KAREL_EAST:
             new_d = KAREL_NORTH
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_WEST:
             new_d = KAREL_SOUTH
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_NORTH:
             new_d = KAREL_WEST
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_SOUTH:
             new_d = KAREL_EAST
-            log("dir: {}".format(new_d))
         else:
             error("invalid dir: {}".format(self.dir))
         self.karels[handle].dir = new_d
@@ -159,16 +151,12 @@ class KarelModel:
         new_d = self.karels[handle].dir
         if self.karels[handle].dir == KAREL_EAST:
             new_d = KAREL_SOUTH
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_WEST:
             new_d = KAREL_NORTH
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_NORTH:
             new_d = KAREL_EAST
-            log("dir: {}".format(new_d))
         elif self.karels[handle].dir == KAREL_SOUTH:
             new_d = KAREL_WEST
-            log("dir: {}".format(new_d))
         else:
             error("invalid dir: {}".format(self.dir))
         self.karels[handle].dir = new_d
@@ -322,7 +310,7 @@ class KarelModel:
 
     def front_is_bomb(self, handle):
         new_row, new_col = self.__next_pos(handle)
-        return not self.bombs.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+        return self.front_is_clear(handle) and not self.bombs.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
 
     def load_world(self, world):
         self.rows = world["dimension"][0]

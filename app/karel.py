@@ -1,3 +1,4 @@
+import random
 import socketIO_client
 from flask_socketio import emit
 
@@ -230,6 +231,35 @@ class Karel:
         else:
             self.__send_command("die")
             raise DyingException("No beepers to convert")
+
+    def black_code(self):
+        turns = {
+          1: 'turnRight',
+          2: 'turnAround',
+          3: 'turnLeft'
+        }
+        second_turn = turns[random.randint(1,3)]
+
+        return """function main(){
+          repeat( %s ) {
+              while( frontIsClear() ) {
+                  move();
+                  if ( beepersPresent() ) {
+                      pickBeeper();
+                      convertBeeperIntoMine();
+                  }
+                  if( frontIsBlocked() ) {
+                      if ( isRemovableWall() ) {
+                          removeWall();
+                      }
+                  }
+               }
+              %s();
+              while( frontIsBlocked() ) {
+                  turnLeft();
+               }
+            }
+          }""" % (random.randint(1,3), second_turn)
 
 
 INFINITY = 100000000
