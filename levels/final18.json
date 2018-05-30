@@ -1,4 +1,5 @@
 {
+  "allows_black_karel": true,
 	"entities": [{
 		"type": "EntityBomb",
 		"x": 192,
