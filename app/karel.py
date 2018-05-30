@@ -263,9 +263,6 @@ class Karel:
                   }
                }
               %s();
-              while( frontIsBlocked() ) {
-                  turnLeft();
-               }
             }
           }""" % (random.randint(1,3), second_turn)
 

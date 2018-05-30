@@ -132,12 +132,13 @@ class ImpactMap:
     def spawn_black_karel(self):
         if self.allows_black_karel():
           x, y = self._pick_random_position()
+          facing = {0: 'EAST', 1: 'WEST', 2: 'NORTH', 3: 'SOUTH'}[random.randint(0,3)]
           black = {
               "type": "EntityKarel",
               "x": from_map(x),
               "y": from_map(y),
               "settings": {
-                  "facing": "EAST",
+                  "facing": facing,
                   "name": "karel-black"
               }
           }

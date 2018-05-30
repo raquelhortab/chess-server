@@ -42,9 +42,8 @@ class GameNamespace(Namespace):
                 # black karel
                 black = map.spawn_black_karel()
                 if black:
-                    facing = {0: 'EAST', 1: 'WEST', 2: 'NORTH', 3: 'SOUTH'}[random.randint(0,3)]
                     msg = {"handle": "karel-black", "command": "spawn",
-                           "params": {"x": black["x"], "y": black["y"], "facing": facing}}
+                           "params": {"x": black["x"], "y": black["y"], "facing": black["settings"]["facing"]}}
                     emit("command", json.dumps(msg), room=data["game_id"])
                     karel_model = KarelModel(current_app.logger)
                     karel_model.load_world(map.to_compiler())

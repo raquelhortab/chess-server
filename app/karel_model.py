@@ -76,6 +76,9 @@ class Bombs(RemovableWalls):
     def remove_bomb(self, row, col):
         ok = self.remove_wall(row, col)
 
+    def is_bomb(self, row, col):
+        return self.walls[row][col] == 1
+
 class KarelModel:
     def __init__(self, logger):
         self.logger = logger
@@ -316,7 +319,7 @@ class KarelModel:
 
     def front_is_bomb(self, handle):
         new_row, new_col = self.__next_pos(handle)
-        return self.front_is_clear(handle) and not self.bombs.is_move_valid(self.karels[handle].row, self.karels[handle].col, new_row, new_col)
+        return self.bombs.is_bomb(new_row, new_col)
 
     def load_world(self, world):
         self.rows = world["dimension"][0]
