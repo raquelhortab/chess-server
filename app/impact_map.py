@@ -81,10 +81,11 @@ class ImpactMap:
         return bombs
 
     def allows_bombs(self):
+        return True
         return "allows_bombs" in self.impact_map and self.impact_map["allows_bombs"]
 
     def allows_black_karel(self):
-        #return True
+        return True
         return "allows_black_karel" in self.impact_map and self.impact_map["allows_black_karel"]
 
     def _valid_place(self, x, y):
