@@ -36,11 +36,21 @@ class GameNamespace(Namespace):
                 map.load(map_data)
                 beeper = map.spawn_beeper()
                 if random.randint(1, 10) == 2: # accept 2.5% of requests
-                  current_app.logger.error(data["game_id"] + ' spawnbomb')
-                  bomb = map.spawn_bomb()
+                    # current_app.logger.error(data["game_id"] + ' spawnbomb')
+                    allow_bombs = self.redis.get("{}|allow_bombs".format(data["game_id"]))
+                    if allow_bombs is not None and bool(int(allow_bombs)):
+                        bomb = map.spawn_bomb()
+                        if bomb is not None: current_app.logger.error("spawnbomb")
+                    else:
+                        bomb = None
 
                 # black karel
-                black = map.spawn_black_karel()
+                allow_black_karel = self.redis.get("{}|allow_black_karel".format(data["game_id"]))
+                if allow_black_karel is not None and bool(int(allow_black_karel)):
+                    black = map.spawn_black_karel()
+                else:
+                    black = None
+
                 if black:
                     msg = {"handle": "karel-black", "command": "spawn",
                            "params": {"x": black["x"], "y": black["y"], "facing": black["settings"]["facing"]}}
@@ -136,3 +146,15 @@ class GameNamespace(Namespace):
         self.redis.hmset(key_pl, players)
         current_app.logger.error(players)
         emit('pick_karel', (data["pc_id"], jsoned_data), room=data["game_id"])
+
+    def on_allow_bombs_change(self, data):
+        current_app.logger.error("on allow bombs")
+        join_room(data["game_id"])
+        key = "{}|allow_bombs".format(data["game_id"])
+        self.redis.set(key, data["allow_bombs"])
+
+    def on_allow_black_karel_change(self, data):
+        current_app.logger.error("on allow black karel")
+        join_room(data["game_id"])
+        key = "{}|allow_black_karel".format(data["game_id"])
+        self.redis.set(key, data["allow_black_karel"])

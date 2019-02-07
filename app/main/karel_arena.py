@@ -16,11 +16,13 @@ from . import main
 
 @main.route("/<regex('([A-Za-z0-9]{6})'):game_id>", methods=["GET", "POST"])
 def run_game(game_id):
+    current_app.logger.error("karel_arena.run_game")
     tv_mode = request.args.get('mode') == "tv"
     key_pl = "{}|players".format(game_id)
     players = redis.hgetall(key_pl)
     nickname = request.args.get('nickname')
     pc_id = request.args.get('pc_id')
+    allow_conf = bool(int(request.args.get('allow_conf')))
     if len(players) >= 4 and not(pc_id in players) and not(tv_mode):
         flash("This game is full, start a new one", "errors")
         return render_template('index.html')
@@ -55,7 +57,7 @@ def run_game(game_id):
             players=players
         )
     else:
-        return render_template('setup.html', game_id=game_id, form=form, nickname=nickname, pc_id=pc_id, players=players)
+        return render_template('setup.html', game_id=game_id, form=form, nickname=nickname, pc_id=pc_id, players=players, allow_conf=allow_conf)
 
 
 

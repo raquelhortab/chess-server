@@ -9,11 +9,11 @@
 {% block content %}
 <div class="container">
     <div class="app" id="choose-karel">
-        <p class="lead"><strong id="greeter">{{ nickname }}</strong>, choose your karel's color</p>
 
         <form id="handle-form" method="post" role="form">
             {{ form.hidden_tag() }}
             <div class="panel-body">
+                <p class="lead"><strong id="greeter">{{ nickname }}</strong>, choose your karel's color</p>
                 <div class="btn-group btn-group-justified btn-group-lg" data-toggle="buttons">
                     <label class="btn btn-info">
                         <input type="radio" name="handle_radio" id="karel-blue" autocomplete="off">Blue
@@ -28,6 +28,28 @@
                         <input type="radio" name="handle_radio" id="karel-yellow" autocomplete="off">Yellow
                     </label>
                 </div>
+                {% if allow_conf %}
+                <br><br>
+                <p class="lead">Allow bombs?</p>
+                <div class="btn-group btn-group-lg" data-toggle="buttons">
+                    <label class="btn btn-primary">
+                        <input type="radio" name="bombs_radio" value="1" autocomplete="off">Yes
+                    </label>
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="bombs_radio" value="0" autocomplete="off" checked="checked">No
+                    </label>
+                </div>
+                <br><br>
+                <p class="lead">Allow Black Karel?</p>
+                <div class="btn-group btn-group-lg" data-toggle="buttons">
+                    <label class="btn btn-primary">
+                        <input type="radio" name="black_karel_radio" value="1" autocomplete="off">Yes
+                    </label>
+                    <label class="btn btn-primary active">
+                        <input type="radio" name="black_karel_radio" value="0" autocomplete="off" checked="checked">No
+                    </label>
+                </div>
+                {% endif %}
             </div>
             <input type="hidden" name="handle">
             <input type="hidden" name="game_id" value="{{ game_id }}">
