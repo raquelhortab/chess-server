@@ -6,6 +6,10 @@
 </div>
 {% endmacro %}
 
+{% macro beeper_img(color) %}
+<span id="beepers-{{color}}" style="color:#3385C8;font-weight:bold;"><img class="beeper-img" src="" style="vertical-align:bottom;width:24px;height:24px;object-fit: cover;object-position:0 0;display:inline;"> x <span id="beeper-number-{{ color }}">0</span></span>
+{% endmacro %}
+
 {% block styles %}
 {{super()}}
 <link href="/karel/challenge/app.css" rel="stylesheet">
@@ -15,11 +19,11 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6">
-          <span style='float:left' id='karel-green-name' class='player-name'>-</span><span style='float:right' id='karel-yellow-name' class='player-name'>-</span>
+            <span style='float:left'><span id='karel-green-name' class='player-name'>-</span>{{beeper_img("karel-green")}}</span><span style='float:right'><span id='karel-yellow-name' class='player-name'>-</span>{{beeper_img("karel-yellow")}}</span>
             <div id="ref_canvas_container">
                 <canvas id='canvas'></canvas>
             </div>
-          <span style='float:left' id='karel-blue-name' class='player-name'>-</span><span style='float:right' id='karel-red-name' class='player-name'>-</span>
+            <span style='float:left'><span id='karel-blue-name' class='player-name'>-</span>{{beeper_img("karel-blue")}}</span><span style='float:right'><span id='karel-red-name' class='player-name'>-</span>{{beeper_img("karel-red")}}</span>
         </div>
         <div class="col-md-6" style='display:none'>
             <form>
