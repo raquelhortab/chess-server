@@ -95,7 +95,7 @@ class ImpactMap:
         mx = from_map(x)
         my = from_map(y)
         for entity in self.impact_map["entities"]:
-            if entity["type"] in ["EntityKarel", "EntityTray"]: # EntityBeeper not here to prevent eventual infinite loops!
+            if entity["type"] in ["EntityKarel", "EntityTray", "EntityTeleport"]: # EntityBeeper not here to prevent eventual infinite loops!
                 if entity["x"] == mx and entity["y"] == my:
                     return False
         return True
@@ -146,6 +146,13 @@ class ImpactMap:
           self.impact_map["entities"].append(black)
           return black
 
+    def update_initial_positions(self, karel_model):
+        for entity in self.impact_map["entities"]:
+            if entity["type"] == "EntityKarel":
+                entity_name = entity["settings"]["name"]
+                entity["x"] = from_map(karel_model.karels_initial[entity_name].row)
+                entity["y"] = from_map(karel_model.karels_initial[entity_name].col)
+
     def kill_black_karel(self):
         for entity in self.impact_map["entities"]:
           if entity["type"] == "EntityKarel" and entity["settings"]["name"] == 'karel-black':
@@ -192,6 +199,20 @@ class ImpactMap:
                 )
         return trays
 
+    def get_teleports(self):
+        teleports = []
+        for entity in self.impact_map["entities"]:
+            if entity["type"] == "EntityTeleport":
+                teleports.append(
+                    (
+                        to_map(entity["x"]),
+                        to_map(entity["y"]),
+                        to_map(entity["settings"]["destination_x"]),
+                        to_map(entity["settings"]["destination_y"]),
+                    )
+                )
+        return teleports
+
     def get_exits(self):
         exits = []
         for entity in self.impact_map["entities"]:
@@ -214,12 +235,12 @@ class ImpactMap:
         world["trays"] = self.get_trays()
         world["exits"] = self.get_exits()
         world["bombs"] = self.get_bombs()
+        world["teleports"] = self.get_teleports()
         return world
 
     def from_compiler(self, world):
         entities_to_clear = ["EntityBeeper", "EntityKarel", "EntityTray", "EntityBomb"]
         entities = [e for e in self.impact_map["entities"] if e["type"] not in entities_to_clear]
-
         for y, x in world["beepers"]:
             beeper = {
                 "type": "EntityBeeper",
@@ -247,7 +268,7 @@ class ImpactMap:
                 }
             }
             entities.append(tray)
-        for name, y, x, dir in world["karels"]: # :S
+        for name, y, x, direction in world["karels"]: # :S
             if name == 'karel-black':
               continue
             karel = {
@@ -255,11 +276,12 @@ class ImpactMap:
                 "x": from_map(x),
                 "y": from_map(y),
                 "settings": {
-                    "facing": dir,
+                    "facing": direction,
                     "name": name
                 }
             }
             entities.append(karel)
+
 
         self.impact_map["entities"] = entities
 

@@ -1,4 +1,5 @@
 import copy
+import random
 
 from pykarel.karel.beepers import Beepers
 from pykarel.karel.exits import Exits
@@ -23,6 +24,35 @@ class KarelEntity:
     def __str__(self):
         return "Karel '{}' at {}, {} facing {} having {} beepers".format(self.handle, self.row, self.col, self.dir,
                                                                          len(self.bag))
+
+
+class Teleports:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+
+        self.teleports = [[False for i in range(cols)] for j in range(rows)]
+        self.destinations = [[(-1, -1) for i in range(cols)] for j in range(rows)]
+
+    def dump(self):
+        for i in range(self.cols):
+            for j in range(self.rows):
+                if self.teleports[i][j] == True:
+                    yield i, j
+
+    def add_teleport(self, row, col, destination_row, destination_col):
+        self.teleports[row][col] = True
+        self.destinations[row][col] = (destination_row, destination_col)
+
+    def teleport_present(self, row, col):
+        error("handle row col: "+str(row) + "," + str(col))
+        error("teleports row col: "+str(self.teleports[row][col]))
+        error("teleports 2 row col: " + str(self.teleports[16][16]))
+        return self.teleports[row][col]
+
+    def get_destination(self, row, col):
+        return self.destinations[row][col]
+
 
 class OwnedTray(Tray):
     def __init__(self, capacity, required, initial_beepers, owner):
@@ -85,6 +115,7 @@ class KarelModel:
         self.beepers = None
         self.trays = None
         self.exits = None
+        self.teleports = None
         self.walls = None
         self.stones = None
         self.bombs = None
@@ -96,6 +127,15 @@ class KarelModel:
     def exit(self, handle):
         if self.exits.exit_present(self.karels[handle].row, self.karels[handle].col) and \
           self.trays.owner_trays_full(handle):
+            return True
+        return False
+
+    def teleport(self, handle):
+        if self.teleports.teleport_present(self.karels[handle].row, self.karels[handle].col):
+            destination = self.teleports.get_destination(self.karels[handle].row, self.karels[handle].col)
+            self.karels_initial[handle].row = destination[0]
+            self.karels_initial[handle].col = destination[1]
+            error(self.karels_initial[handle])
             return True
         return False
 
@@ -133,6 +173,7 @@ class KarelModel:
         if self.front_is_clear(handle):
             self.karels[handle].row = new_row
             self.karels[handle].col = new_col
+            current_app.logger.error("move new_row new_col: " + str(new_row) + "," + str(new_col))
             return True
         else:
             self.logger.info("row: {} col: {} dir: {}".format(new_row, new_col, dir))
@@ -330,6 +371,7 @@ class KarelModel:
         self.stones = Walls(self.rows, self.cols)
         self.trays = OwnedTrays(self.rows, self.cols)
         self.exits = Exits(self.rows, self.cols)
+        self.teleports = Teleports(self.rows, self.cols)
         self.bombs = Bombs(self.rows, self.cols)
 
         for beeper in world["beepers"]:
@@ -346,6 +388,9 @@ class KarelModel:
 
         for exit in world["exits"]:
             self.exits.add_exit(exit[0], exit[1])
+
+        for teleport in world["teleports"]:
+            self.teleports.add_teleport(teleport[0], teleport[1], teleport[2], teleport[3])
 
         for bomb in world["bombs"]:
             self.bombs.add_bomb(bomb[0], bomb[1])
@@ -391,6 +436,9 @@ class KarelModel:
         world["exits"] = []
         for exit in self.exits.dump():
             world["exits"].append(exit)
+        world["teleports"] = []
+        for teleport in self.teleports.dump():
+            world["teleports"].append(teleport)
         return world
 
     def respawn(self, handle):

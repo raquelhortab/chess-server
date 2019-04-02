@@ -12,7 +12,7 @@ class Karel:
         turnRight=2, turnAround=2, paintCorner=2,
         putBeeperInTray=1, pickBeeperFromTray=1,
         exit=1, removeWall=1, createWall=1,
-        convertBeeperIntoMine=1
+        convertBeeperIntoMine=1, teleport=1
     )
 
     predicates = dict(
@@ -179,6 +179,14 @@ class Karel:
             self.declareWinner()
         else:
             self.__send_command("die")
+            raise DyingException("Can't exit")
+
+    def teleport(self):
+        if self.karel_model.teleport(self.handle):
+            self.__send_command("teleport")
+        else:
+            self.__send_command("die")
+            raise DyingException("There is no teleport here.")
 
     def removeWall(self):
         if self.karel_model.remove_wall(self.handle):
@@ -202,24 +210,28 @@ class Karel:
             self.__send_command("pickBeeper")
         else:
             self.__send_command("die")
+            raise DyingException("Can't pick beeper")
 
     def putBeeper(self):
         if self.karel_model.put_beeper(self.handle):
             self.__send_command("putBeeper")
         else:
             self.__send_command("die")
+            raise DyingException("Can't put beeper")
 
     def putBeeperInTray(self):
         if self.karel_model.put_beeper_in_tray(self.handle):
             self.__send_command("putBeeperInTray")
         else:
             self.__send_command("die")
+            raise DyingException("Can't put beeper in tray")
 
     def pickBeeperFromTray(self):
         if self.karel_model.pick_beeper_from_tray(self.handle):
             self.__send_command("pickBeeperFromTray")
         else:
             self.__send_command("die")
+            raise DyingException("Can't pick beeper from tray")
 
     def load_world(self, world):
         self.karel_model.load_world(world)
