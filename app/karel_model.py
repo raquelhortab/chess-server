@@ -1,7 +1,6 @@
 import copy
 import random
 
-from pykarel.karel.beepers import Beepers
 from pykarel.karel.exits import Exits
 from pykarel.karel.karel_constants import KAREL_EAST, KAREL_WEST, KAREL_NORTH, KAREL_SOUTH
 from pykarel.karel.trays import Trays, Tray
@@ -12,6 +11,29 @@ from flask import current_app
 def error(txt):
     current_app.logger.error(txt)
 
+class Beepers:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.beepers = [[0 for i in range(cols)] for j in range(rows)]
+
+    def dump(self):
+        for i in range(self.cols):
+            for j in range(self.rows):
+                for k in range (self.beepers[i][j]):
+                    yield i, j
+
+    def beeper_present(self, row, col):
+        return self.beepers[row][col] > 0
+
+    def num_beepers(self, row, col):
+        return self.beepers[row][col]
+
+    def put_beeper(self, row, col):
+        self.beepers[row][col] += 1
+
+    def pick_beeper(self, row, col):
+        self.beepers[row][col] -= 1
 
 class KarelEntity:
     def __init__(self, handle, row, col, dir):

@@ -80,6 +80,7 @@ class GameNamespace(Namespace):
 
 
                 self.redis.set(data["game_id"], json.dumps(map.impact_map))
+            current_app.logger.error(data["game_id"] + ' endspawn' + str(beeper["x"]) + str(beeper["y"]))
             msg = {"handle": "common", "command": "spawnBeeper",
                    "params": {"x": beeper["x"], "y": beeper["y"]}}
             emit("command", json.dumps(msg), room=data["game_id"])
