@@ -187,13 +187,25 @@
 		"x": 48,
 		"y": 144
 	}, {
-		"type": "EntityTeleport",
+    "settings": {
+           "destination_x": 168,
+           "destination_y": 98
+       },
+    "type": "EntityTeleport",
 		"x": 312,
 		"y": 290
 	}, {
+    "settings": {
+           "destination_x": 312,
+           "destination_y": 290
+       },
 		"type": "EntityTeleport",
 		"x": 168,
 		"y": 98
+	},{
+		"type": "EntityBomb",
+    "x": 384,
+    "y": 96
 	}, {
 		"type": "EntityBomb",
 		"x": 240,

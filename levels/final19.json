@@ -128,10 +128,18 @@
 		"x": 288,
 		"y": 360
 	}, {
-		"type": "EntityTeleport",
+    "settings": {
+           "destination_x": 168,
+           "destination_y": 98
+       },
+    "type": "EntityTeleport",
 		"x": 96,
 		"y": 146
 	}, {
+    "settings": {
+           "destination_x": 96,
+           "destination_y": 146
+       },
 		"type": "EntityTeleport",
 		"x": 168,
 		"y": 98
