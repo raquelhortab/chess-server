@@ -205,8 +205,8 @@ class ImpactMap:
             if entity["type"] == "EntityTeleport":
                 teleports.append(
                     (
-                        to_map(entity["x"]),
                         to_map(entity["y"]),
+                        to_map(entity["x"]),
                         to_map(entity["settings"]["destination_x"]),
                         to_map(entity["settings"]["destination_y"]),
                     )
