@@ -12,12 +12,6 @@
         "capacity": 7,
         "initialBeepers": 0,
         "required": 7,
-        "owner": "karel-green"
-    },
-    "settings": {
-        "capacity": 7,
-        "initialBeepers": 0,
-        "required": 7,
         "owner": "karel-blue"
     },
 		"type": "EntityTray",
@@ -38,7 +32,7 @@
         "capacity": 7,
         "initialBeepers": 0,
         "required": 7,
-        "owner": "karel-yellow"
+        "owner": "karel-green"
     },
 		"type": "EntityTray",
 		"x": 24,
@@ -72,6 +66,12 @@
 		"x": 240,
 		"y": 288
 	}, {
+    "settings": {
+        "capacity": 7,
+        "initialBeepers": 0,
+        "required": 7,
+        "owner": "karel-yellow"
+    },
 		"type": "EntityTray",
 		"x": 24,
 		"y": 24
