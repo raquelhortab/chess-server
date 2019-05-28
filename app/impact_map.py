@@ -152,6 +152,7 @@ class ImpactMap:
                 entity_name = entity["settings"]["name"]
                 entity["x"] = from_map(karel_model.karels_initial[entity_name].row)
                 entity["y"] = from_map(karel_model.karels_initial[entity_name].col)
+                entity["settings"]["facing"] = karel_model.karels_initial[entity_name].dir
 
     def kill_black_karel(self):
         for entity in self.impact_map["entities"]:

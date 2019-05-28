@@ -157,6 +157,7 @@ class KarelModel:
             destination = self.teleports.get_destination(self.karels[handle].row, self.karels[handle].col)
             self.karels_initial[handle].row = destination[1]
             self.karels_initial[handle].col = destination[0]
+            self.karels_initial[handle].dir = self.karels[handle].dir
             error(self.karels_initial[handle])
             return True
         return False
