@@ -2,7 +2,7 @@ import json
 import random
 import re
 from flask import current_app
-
+from pykarel.karel.karel_constants import KAREL_EAST, KAREL_WEST, KAREL_NORTH, KAREL_SOUTH
 
 START = """LevelLevel0=/*JSON[*/"""
 END = """/*]JSON*/;
@@ -19,6 +19,7 @@ def from_map(coord):
 
 
 class ImpactMap:
+
     def __init__(self):
         self.impact_map = {}
 
@@ -147,12 +148,18 @@ class ImpactMap:
           return black
 
     def update_initial_positions(self, karel_model):
+        karel_direction_backwards = dict((
+            (KAREL_EAST, "EAST"),
+            (KAREL_WEST, "WEST"),
+            (KAREL_NORTH, "NORTH"),
+            (KAREL_SOUTH, "SOUTH"),
+        ))
         for entity in self.impact_map["entities"]:
             if entity["type"] == "EntityKarel":
                 entity_name = entity["settings"]["name"]
                 entity["x"] = from_map(karel_model.karels_initial[entity_name].row)
                 entity["y"] = from_map(karel_model.karels_initial[entity_name].col)
-                entity["settings"]["facing"] = karel_model.karels_initial[entity_name].dir
+                entity["settings"]["facing"] = karel_direction_backwards[karel_model.karels_initial[entity_name].dir]
 
     def kill_black_karel(self):
         for entity in self.impact_map["entities"]:

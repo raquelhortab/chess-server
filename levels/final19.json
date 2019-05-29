@@ -130,19 +130,19 @@
 	}, {
     "settings": {
            "destination_x": 168,
-           "destination_y": 98
+           "destination_y": 96
        },
     "type": "EntityTeleport",
 		"x": 96,
-		"y": 146
+		"y": 144
 	}, {
     "settings": {
            "destination_x": 96,
-           "destination_y": 146
+           "destination_y": 144
        },
 		"type": "EntityTeleport",
 		"x": 168,
-		"y": 98
+		"y": 96
 	}, {
     "settings": {
         "facing": "EAST",

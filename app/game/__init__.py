@@ -123,6 +123,7 @@ class GameNamespace(Namespace):
                     map.update_initial_positions(karel_model)
                     karel_model.respawn(data["handle"])
                     msg = '{"handle": "%s", "command": "die"}' % (data["handle"])
+                    current_app.logger.error("no more steps: die")
                     emit('command', msg, room=data["game_id"])
                     map.from_compiler(karel_model.dump_world())
                     self.redis.set(data["game_id"], json.dumps(map.impact_map))

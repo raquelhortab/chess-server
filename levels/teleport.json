@@ -189,19 +189,19 @@
 	}, {
     "settings": {
            "destination_x": 168,
-           "destination_y": 98
+           "destination_y": 96
        },
     "type": "EntityTeleport",
 		"x": 312,
-		"y": 290
+		"y": 288
 	}, {
     "settings": {
            "destination_x": 312,
-           "destination_y": 290
+           "destination_y": 288
        },
 		"type": "EntityTeleport",
 		"x": 168,
-		"y": 98
+		"y": 96
 	},{
 		"type": "EntityBomb",
     "x": 384,
