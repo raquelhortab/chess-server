@@ -155,6 +155,8 @@ class KarelModel:
     def teleport(self, handle):
         if self.teleports.teleport_present(self.karels[handle].row, self.karels[handle].col):
             destination = self.teleports.get_destination(self.karels[handle].row, self.karels[handle].col)
+            self.karels[handle].row = destination[1]
+            self.karels[handle].col = destination[0]
             self.karels_initial[handle].row = destination[1]
             self.karels_initial[handle].col = destination[0]
             self.karels_initial[handle].dir = self.karels[handle].dir
