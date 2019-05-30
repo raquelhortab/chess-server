@@ -121,15 +121,15 @@ class RemovableWalls(Walls):
             return False
         self.walls[row][col] = 0
 
-class Bombs(RemovableWalls):
+class Bombs(Beepers):
     def add_bomb(self, row, col):
-        self.add_wall(row, col)
+        self.put_beeper(row, col)
 
     def remove_bomb(self, row, col):
-        ok = self.remove_wall(row, col)
+        ok = self.pick_beeper(row, col)
 
     def is_bomb(self, row, col):
-        return self.walls[row][col] == 1
+        return self.beeper_present(row, col)
 
 class KarelModel:
     def __init__(self, logger):
