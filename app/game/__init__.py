@@ -53,12 +53,12 @@ class GameNamespace(Namespace):
 
                 # black karel
                 allow_black_karel = self.redis.get("{}|allow_black_karel".format(data["game_id"]))
-                if allow_black_karel is not None and bool(int(allow_black_karel)):
+                if allow_black_karel is not None and bool(int(allow_black_karel)) and random.randint(1, 2) == 1: # accept 12.5% of requests
                     black = map.spawn_black_karel()
                 else:
                     black = None
 
-                if black and random.randint(1, 2) == 1: # accept 12.5% of requests
+                if black
                     msg = {"handle": "karel-black", "command": "spawn",
                            "params": {"x": black["x"], "y": black["y"], "facing": black["settings"]["facing"]}}
                     emit("command", json.dumps(msg), room=data["game_id"])
@@ -118,7 +118,7 @@ class GameNamespace(Namespace):
                                "params": {"x": beeper[1] * 24, "y": beeper[0] * 24}}
                         current_app.logger.error('undoemit')
                         emit("command", json.dumps(msg), room=data["game_id"])
-                    #map.update_initial_positions(karel_model)
+                    map.update_initial_positions(karel_model)
                     karel_model.respawn(data["handle"])
                     msg = '{"handle": "%s", "command": "die"}' % (data["handle"])
                     current_app.logger.error("no more steps: die")
