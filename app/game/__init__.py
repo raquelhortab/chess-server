@@ -118,7 +118,7 @@ class GameNamespace(Namespace):
                                "params": {"x": beeper[1] * 24, "y": beeper[0] * 24}}
                         current_app.logger.error('undoemit')
                         emit("command", json.dumps(msg), room=data["game_id"])
-                    map.update_initial_positions(karel_model)
+                    #map.update_initial_positions(karel_model)
                     karel_model.respawn(data["handle"])
                     msg = '{"handle": "%s", "command": "die"}' % (data["handle"])
                     current_app.logger.error("no more steps: die")
