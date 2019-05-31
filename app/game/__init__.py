@@ -81,9 +81,9 @@ class GameNamespace(Namespace):
                         except (DyingException, Exception) as e:
                             current_app.logger.error(e)
                             emit("error", (str(e), 'karel-black'), room=data["game_id"])
+                    map.from_compiler(karel_model.dump_world())
                     map.kill_black_karel()
                     emit("command", json.dumps({"handle": "karel-black", "command": "die"}), room=data["game_id"])
-                    map.from_compiler(karel_model.dump_world())
 
                 self.redis.set(data["game_id"], json.dumps(map.impact_map))
 
