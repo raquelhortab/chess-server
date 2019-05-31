@@ -35,14 +35,21 @@ class GameNamespace(Namespace):
                 map_data = self.redis.get(data["game_id"])
                 map.load(map_data)
                 beeper = map.spawn_beeper()
+                current_app.logger.error(data["game_id"] + ' endspawn' + str(beeper["x"]) + str(beeper["y"]))
+                msg = {"handle": "common", "command": "spawnBeeper",
+                       "params": {"x": beeper["x"], "y": beeper["y"]}}
+                emit("command", json.dumps(msg), room=data["game_id"])
+
                 if random.randint(1, 10) == 2: # accept 2.5% of requests
-                    # current_app.logger.error(data["game_id"] + ' spawnbomb')
+                    current_app.logger.error(data["game_id"] + ' spawnbomb')
                     allow_bombs = self.redis.get("{}|allow_bombs".format(data["game_id"]))
                     if allow_bombs is not None and bool(int(allow_bombs)):
                         bomb = map.spawn_bomb()
-                        if bomb is not None: current_app.logger.error("spawnbomb")
-                    else:
-                        bomb = None
+                        if bomb is not None
+                          current_app.logger.error("spawnbomb done")
+                          msg = {"handle": "common", "command": "spawnBomb",
+                                 "params": {"x": bomb["x"], "y": bomb["y"]}}
+                          emit("command", json.dumps(msg), room=data["game_id"])
 
                 # black karel
                 allow_black_karel = self.redis.get("{}|allow_black_karel".format(data["game_id"]))
@@ -78,16 +85,7 @@ class GameNamespace(Namespace):
                     emit("command", json.dumps({"handle": "karel-black", "command": "die"}), room=data["game_id"])
                     map.from_compiler(karel_model.dump_world())
 
-
                 self.redis.set(data["game_id"], json.dumps(map.impact_map))
-            current_app.logger.error(data["game_id"] + ' endspawn' + str(beeper["x"]) + str(beeper["y"]))
-            msg = {"handle": "common", "command": "spawnBeeper",
-                   "params": {"x": beeper["x"], "y": beeper["y"]}}
-            emit("command", json.dumps(msg), room=data["game_id"])
-            if bomb:
-              msg = {"handle": "common", "command": "spawnBomb",
-                     "params": {"x": bomb["x"], "y": bomb["y"]}}
-              emit("command", json.dumps(msg), room=data["game_id"])
 
 
     def on_execute(self, data):
