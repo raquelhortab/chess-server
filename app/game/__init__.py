@@ -58,7 +58,7 @@ class GameNamespace(Namespace):
                 else:
                     black = None
 
-                if black
+                if black:
                     msg = {"handle": "karel-black", "command": "spawn",
                            "params": {"x": black["x"], "y": black["y"], "facing": black["settings"]["facing"]}}
                     emit("command", json.dumps(msg), room=data["game_id"])
