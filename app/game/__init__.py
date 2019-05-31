@@ -45,7 +45,7 @@ class GameNamespace(Namespace):
                     allow_bombs = self.redis.get("{}|allow_bombs".format(data["game_id"]))
                     if allow_bombs is not None and bool(int(allow_bombs)):
                         bomb = map.spawn_bomb()
-                        if bomb is not None
+                        if bomb is not None:
                           current_app.logger.error("spawnbomb done")
                           msg = {"handle": "common", "command": "spawnBomb",
                                  "params": {"x": bomb["x"], "y": bomb["y"]}}
