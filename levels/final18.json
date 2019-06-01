@@ -183,7 +183,7 @@
 	}, {
 		"type": "EntityExit",
 		"x": 96,
-		"y": 24
+		"y": 72 
 	}],
 	"layer": [{
 		"name": "collision",
