@@ -1,0 +1,43 @@
+<link href="/chess/css/chessboard-1.0.0.css" rel="stylesheet" />
+
+<div>
+  <div id="myBoard" style="width: 400px"></div>
+  <label>Status:</label>
+  <div id="status"></div>
+  <label>FEN:</label>
+  <div id="fen"></div>
+  <label>PGN:</label>
+  <div id="pgn"></div>
+</div>
+
+
+<script src="/chess/js/chessboard-1.0.0.min.js"></script>
+<script src="/chess/js/chess-0.10.2.min.js"></script>
+<script src="/chess/js/app.js"></script>
+
+<script>
+
+    var board = null;
+    var game = new Chess();
+    <% if @project.get_option(:chess_pgn).present? %>
+      game.load_pgn('{{pgn}}');
+    <% end %>
+    var $status = $('#status');
+    var $fen = $('#fen');
+    var $pgn = $('#pgn');
+    var project_id = { project_id }};
+    var chess_color = "{{ chess_color }}";
+
+    var config = {
+        draggable: true,
+        position: game.fen(),
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
+    };
+
+    board = Chessboard('myBoard', config);
+
+    updateStatus();
+
+</script>

@@ -14,6 +14,12 @@ from app.main.forms import GameForm
 from . import main
 
 
+def chessboard(game_id):
+    current_app.logger.error("chessgame")
+    if not redis.exists(game_id):
+        redis.set(game_id, "")
+
+
 @main.route("/<regex('([A-Za-z0-9]{6})'):game_id>", methods=["GET", "POST"])
 def run_game(game_id):
     current_app.logger.error("karel_arena.run_game")

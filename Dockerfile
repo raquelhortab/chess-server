@@ -1,9 +1,12 @@
+# docker build -t chess-server .
+# sudo docker run -p 80:80 -it karel-arena
 FROM ubuntu:16.10
 MAINTAINER albertmp@eml.cc
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV REDIS_URL=127.0.0.1
 
+RUN sed -i.bak -r 's/(archive|security).ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y python3 python-pip gunicorn supervisor git nginx redis-server
 
