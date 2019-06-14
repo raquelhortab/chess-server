@@ -1,0 +1,78 @@
+
+<link href="/chess/css/bootstrap.min.css" rel="stylesheet" />
+<link href="/chess/css/bootstrap-responsive.min.css" rel="stylesheet" />
+<link href="/chess/css/chessboard-1.0.0.css" rel="stylesheet" />
+
+<div style="padding-top: 20px;">
+
+    <div class="" id="chessBoard" style="width: 450px;display: inline-block; margin-right:20px; margin-bottom:20px;"></div>
+    <div style="width: 400px;display: inline-block; vertical-align:top;">
+        <div class="alert alert-info" id="turnInfo"></div>
+        <div class="alert" id="chessInfo" style="visibility:hidden"></div>
+    </div>
+</div>
+
+<div style="display:none;">
+    <label>Status:</label>
+    <div id="status"></div>
+    <label>FEN:</label>
+    <div id="fen"></div>
+    <label>PGN:</label>
+    <div id="pgn"></div>
+</div>
+
+
+<script src="/chess/js/socket.io-1.7.3.min.js"></script>
+<script src="/chess/js/jquery-3.4.1.min.js"></script>
+<script src="/chess/js/chessboard-1.0.0.min.js"></script>
+<script src="/chess/js/chess-0.10.2.min.js"></script>
+<script src="/chess/js/app.js"></script>
+
+
+
+<script>
+
+    var $status_div = $('#status');
+    var $fen_div = $('#fen');
+    var $pgn_div = $('#pgn');
+
+
+    var board = null;
+    var turn = "{{turn}}";
+
+    var color = "{{ color }}";
+    var game_id = "{{game_id}}";
+
+    var config = {
+        draggable: true,
+        position: '{{fen}}',
+        onDrop: onDrop,
+        onDragStart: onDragStart,
+    };
+
+    board = Chessboard('chessBoard', config);
+
+    parent.document.getElementById("chess_frame").onload();
+
+    {% if game_over%}
+        var game_over = false;
+        console.log("game_finished");
+        var winner = "{{winner}}";
+        var fen = "{{fen}}";
+        var pgn = `{{pgn}}`;
+        if(winner == parent.pc_id.toString()){
+            show_info(parent.won_text, "alert alert-success");
+        }
+        else if(winner == ""){
+            show_info(parent.tie_text, "alert alert-warning");
+        }
+        else{
+            show_info(parent.lost_text, "alert alert-error");
+        }
+        parent.document.getElementById("chess_frame").onload();
+        parent.finish_game(pgn,winner,false);
+    {% else %}
+        var game_over = false;
+    {% endif %}
+
+</script>

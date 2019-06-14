@@ -21,7 +21,7 @@ class DevelopmentConfig(Config):
         # log to file
         import logging
         from logging import FileHandler
-        file_handler = FileHandler('/var/log/karel_arena.log')
+        file_handler = FileHandler('/var/log/chess_server.log')
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
 

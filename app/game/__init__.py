@@ -1,160 +1,108 @@
-import json
+import io
 import re
-import random
-from functools import partial
-
-import socketIO_client
+import chess
+import chess.pgn
 from flask import Blueprint
 from flask import current_app
 from flask import request
 from flask_socketio import Namespace, emit, join_room
-from pykarel.karel_compiler import KarelCompiler
-from redlock import RedLock
 
-from app.impact_map import ImpactMap
-from app.karel import DyingException, Karel
-from app.karel_model import KarelModel
 
 messaging = Blueprint('messaging', __name__)
 
+
 class GameNamespace(Namespace):
+
     def __init__(self, redis, namespace=None):
         super(GameNamespace, self).__init__(namespace)
         self.redis = redis
 
+    def load_game(self, game_id):
+        game_data = self.redis.get(game_id)
+        stringIO = io.StringIO(game_data.decode("utf-8"))
+        chess_game = chess.pgn.read_game(stringIO)
+        return chess_game
+
     def on_connect(self):
         game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
         join_room(game_id)
+        current_app.logger.error("on connect")
 
-    def on_spawn_beeper(self, data):
-        if random.randint(1, 4) == 2: # accept 25% of requests
-            bomb = None
-            current_app.logger.error(data["game_id"] + ' spawn')
-            with RedLock("redlock:{}".format(data["game_id"])):
-                map = ImpactMap()
-                map_data = self.redis.get(data["game_id"])
-                map.load(map_data)
-                beeper = map.spawn_beeper()
-                current_app.logger.error(data["game_id"] + ' endspawn' + str(beeper["x"]) + str(beeper["y"]))
-                msg = {"handle": "common", "command": "spawnBeeper",
-                       "params": {"x": beeper["x"], "y": beeper["y"]}}
-                emit("command", json.dumps(msg), room=data["game_id"])
+    def on_set_player_name(self, data):
+        current_app.logger.error("set_player_name")
+        if not data["game_id"] or not data["pc_id"] or not data["name"]:
+            return 404
+        if self.redis.exists(data["game_id"]):
+            chess_game = self.load_game(data["game_id"])
+            color = ""
+            if str(chess_game.headers["White"]) == str(data["pc_id"]):
+                color = "White"
+            if str(chess_game.headers["Black"]) == str(data["pc_id"]):
+                color = "Black"
+            emit("inform_player_name", {"color":  color, "name": data["name"]}, room=data["game_id"])
 
-                if random.randint(1, 10) == 2: # accept 2.5% of requests
-                    current_app.logger.error(data["game_id"] + ' spawnbomb')
-                    allow_bombs = self.redis.get("{}|allow_bombs".format(data["game_id"]))
-                    if allow_bombs is not None and bool(int(allow_bombs)):
-                        bomb = map.spawn_bomb()
-                        if bomb is not None:
-                          current_app.logger.error("spawnbomb done")
-                          msg = {"handle": "common", "command": "spawnBomb",
-                                 "params": {"x": bomb["x"], "y": bomb["y"]}}
-                          emit("command", json.dumps(msg), room=data["game_id"])
+    def on_refresh_board(self, data):
+        if not data["game_id"]:
+            return 404
+        if self.redis.exists(data["game_id"]):
+            chess_game = self.load_game(data["game_id"])
+            current_app.logger.error(str(chess_game))
+            # build board from game
+            board = chess_game.board()
+            for move in chess_game.mainline_moves():
+                board.push(move)
+            turn = "White" if board.turn else "Black"
+            emit("refresh_board", {"fen": board.fen(), "turn": turn}, room=data["game_id"])
 
-                # black karel
-                allow_black_karel = self.redis.get("{}|allow_black_karel".format(data["game_id"]))
-                if allow_black_karel is not None and bool(int(allow_black_karel)) and random.randint(1, 2) == 1: # accept 12.5% of requests
-                    black = map.spawn_black_karel()
-                else:
-                    black = None
-
-                if black:
-                    msg = {"handle": "karel-black", "command": "spawn",
-                           "params": {"x": black["x"], "y": black["y"], "facing": black["settings"]["facing"]}}
-                    emit("command", json.dumps(msg), room=data["game_id"])
-                    karel_model = KarelModel(current_app.logger)
-                    karel_model.load_world(map.to_compiler())
-
-                    karel = Karel(karel_model, data["game_id"], None, "karel-black")
-                    compiler = KarelCompiler(karel)
-                    try:
-                        compiler.compile(karel.black_code())
-                    except Exception as e:
-                        emit("error", (str(e), 'karel-black'), room=data["game_id"])
+    def on_make_move(self, data):
+        current_app.logger.error("on_make_move")
+        current_app.logger.error(data["source"] + data["target"])
+        if not data["target"] or not data["source"] or not data["game_id"]:
+            return 404
+        if self.redis.exists(data["game_id"]):
+            chess_game = self.load_game(data["game_id"])
+            current_app.logger.error(str(chess_game))
+            new_move = chess.Move.from_uci(data["source"] + data["target"])
+            # build board from game
+            board = chess_game.board()
+            for move in chess_game.mainline_moves():
+                board.push(move)
+            # check if move is legal
+            if new_move in board.legal_moves:
+                current_app.logger.error("LEGAL MOVE")
+                board.push(new_move)
+                new_game = chess.pgn.Game.from_board(board)
+                new_game.headers = chess_game.headers
+                self.redis.set(data["game_id"], str(new_game))
+                current_app.logger.error("NEW GAME OBJECT:" + str(new_game))
+                current_app.logger.error("NEW FEN:" + str(board.fen()))
+                turn = "White" if board.turn else "Black"
+                emit("move_resolution", {"fen": board.fen(), "legal_move": True, "turn": turn}, room=data["game_id"])
+                if board.is_checkmate() or board.is_stalemate() or board.can_claim_draw():
+                    if board.result() == "1-0":
+                        winner = chess_game.headers["White"]
+                    if board.result() == "0-1":
+                        winner = chess_game.headers["Black"]
                     else:
-                        try:
-                            steps = 500 # random number to avoid endless loops
-                            while not compiler.execute_step():
-                                steps -= 1
-                                if steps < 0:
-                                  raise DyingException('Too many steps. Endless loop?')
-                        except (DyingException, Exception) as e:
-                            current_app.logger.error(e)
-                            emit("error", (str(e), 'karel-black'), room=data["game_id"])
-                    map.from_compiler(karel_model.dump_world())
-                    map.kill_black_karel()
-                    emit("command", json.dumps({"handle": "karel-black", "command": "die"}), room=data["game_id"])
-
-                self.redis.set(data["game_id"], json.dumps(map.impact_map))
-
-
-    def on_execute(self, data):
-        current_app.logger.error(data["game_id"] + ' execute')
-        karel_model = KarelModel(current_app.logger)
-        with RedLock("redlock:{}".format(data["game_id"])):
-            map = ImpactMap()
-            map.load(self.redis.get(data["game_id"]))
-            karel_model.load_world(map.to_compiler())
-            karel = Karel(karel_model, data["game_id"], data["pc_id"], data["handle"])
-            compiler = KarelCompiler(karel)
-
-            try:
-                compiler.compile(str(data["code"]))
-            except Exception as e:
-                emit("error", (str(e), data['handle']), room=data["game_id"])
+                        winner = None
+                    emit("game_finished", {"fen": board.fen(), "pgn": str(new_game), "winner": winner}, room=data["game_id"])
             else:
-                try:
-                    steps = 500 # random number to avoid endless loops
-                    while not compiler.execute_step():
-                        steps -= 1
-                        if steps < 0:
-                          raise DyingException('Too many steps. Endless loop?')
-                except (DyingException, Exception) as e:
-                    emit("error", (str(e), data['handle']), room=data["game_id"])
+                current_app.logger.error("ILLEGAL MOVE")
+                turn = "White" if board.turn else "Black"
+                emit("move_resolution", {"fen": board.fen(), "legal_move": False, "turn": turn}, room=data["game_id"])
 
-                if True:  # After the code, any remaining beeper is returned and the map saved
-                    for beeper in iter(partial(karel_model.return_beeper, data["handle"]), None):
-                        msg = {"handle": data["handle"], "command": "spawnBeeper",
-                               "params": {"x": beeper[1] * 24, "y": beeper[0] * 24}}
-                        current_app.logger.error('undoemit')
-                        emit("command", json.dumps(msg), room=data["game_id"])
-                    map.update_initial_positions(karel_model)
-                    karel_model.respawn(data["handle"])
-                    msg = '{"handle": "%s", "command": "die"}' % (data["handle"])
-                    current_app.logger.error("no more steps: die")
-                    emit('command', msg, room=data["game_id"])
-                    map.from_compiler(karel_model.dump_world())
-                    self.redis.set(data["game_id"], json.dumps(map.impact_map))
-
-
-    def on_pick_karel(self, data):
-        current_app.logger.error("onpick")
-        join_room(data["game_id"])
-        key = "{game_id}|{pc_id}".format(**data)
-        self.redis.set(key, (data["handle"], data["nickname"]))
-        key_pl = "{game_id}|players".format(**data)
-        players = self.redis.hgetall(key_pl)
-
-        # Check that the handle is not already taken. If so, ignore the event
-        for player_id, json_data in players.iteritems():
-          stored_data = json.loads(json_data)
-          if stored_data['h'] == data['handle'] and player_id != data['pc_id']:
-            return
-
-        jsoned_data = json.dumps({"h": data["handle"], "n": data["nickname"]})
-        players[data['pc_id']] = jsoned_data
-        self.redis.hmset(key_pl, players)
-        current_app.logger.error(players)
-        emit('pick_karel', (data["pc_id"], jsoned_data), room=data["game_id"])
-
-    def on_allow_bombs_change(self, data):
-        current_app.logger.error("on allow bombs")
-        join_room(data["game_id"])
-        key = "{}|allow_bombs".format(data["game_id"])
-        self.redis.set(key, data["allow_bombs"])
-
-    def on_allow_black_karel_change(self, data):
-        current_app.logger.error("on allow black karel")
-        join_room(data["game_id"])
-        key = "{}|allow_black_karel".format(data["game_id"])
-        self.redis.set(key, data["allow_black_karel"])
+    #socket.emit("load_example_game",{game_id:game_id})
+    def on_load_example_game(self, data):
+        if self.redis.exists(data["game_id"]):
+            chess_game = self.load_game(data["game_id"])
+            if data["example"] == 1:
+                board = chess.Board("8/8/8/1q6/8/2k5/8/K7 b - -")
+            if data["example"] == 2:
+                board = chess.Board("8/5K1k/8/8/p7/P1B5/8/8 w - - 33 124")
+            new_game = chess.pgn.Game.from_board(board)
+            new_game.headers["White"] = chess_game.headers["White"]
+            new_game.headers["Black"] = chess_game.headers["Black"]
+            new_game.headers["Event"] = chess_game.headers["Event"]
+            self.redis.set(data["game_id"], str(new_game))
+            turn = "White" if board.turn else "Black"
+            emit("refresh_board", {"fen": board.fen(), "turn": turn}, room=data["game_id"])
