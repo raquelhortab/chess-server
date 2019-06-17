@@ -25,17 +25,22 @@ class GameNamespace(Namespace):
         self.redis = redis
 
     def on_update_pgn(self, data):
+        current_app.logger.error("on_update_pgn")
         self.redis.set(data["game_id"], data["pgn"])
 
     def on_get_pgn(self, data):
         chess_game_pgn = self.redis.get(data["game_id"])
         emit("updated_pgn", chess_game_pgn, room=data["game_id"])
 
+    def on_connect(self):
+        game_id = re.match(r'^.*/([A-Za-z0-9]{1}).*$', request.referrer).group(1)
+        join_room(game_id)
+        current_app.logger.error("on connect")
+
+
     ##########################################################################################
 
-    def on_connect(self):
-        game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
-        join_room(game_id)
+
 
     def on_spawn_beeper(self, data):
         if random.randint(1, 4) == 2: # accept 25% of requests

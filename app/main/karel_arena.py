@@ -14,13 +14,20 @@ from app.main.forms import GameForm
 from . import main
 
 
+@main.route("/<regex('([A-Za-z0-9]{6})'):game_id>", methods=["GET", "POST"])
 def chessboard(game_id):
     current_app.logger.error("chessgame")
+    pgn = request.args.get('pgn')
+    color = request.args.get('color')
+    project_id = request.args.get('project_id')
+    white = request.args.get('white')
+    black = request.args.get('black')
     if not redis.exists(game_id):
-        redis.set(game_id, "")
+        redis.set(game_id, pgn)
+    return render_template('chessboard.html', pgn=pgn, color=color, project_id=project_id, white=white, black=black, game_id=game_id)
 
 
-@main.route("/<regex('([A-Za-z0-9]{6})'):game_id>", methods=["GET", "POST"])
+
 def run_game(game_id):
     current_app.logger.error("karel_arena.run_game")
     tv_mode = request.args.get('mode') == "tv"

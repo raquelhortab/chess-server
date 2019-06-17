@@ -11,22 +11,37 @@
 </div>
 
 
+<script src="/chess/js/socket.io-1.7.3.min.js"></script>
+<script src="/chess/js/jquery-3.1.1.min.js"></script>
 <script src="/chess/js/chessboard-1.0.0.min.js"></script>
 <script src="/chess/js/chess-0.10.2.min.js"></script>
 <script src="/chess/js/app.js"></script>
+
 
 <script>
 
     var board = null;
     var game = new Chess();
-    <% if @project.get_option(:chess_pgn).present? %>
-      game.load_pgn('{{pgn}}');
-    <% end %>
+
     var $status = $('#status');
     var $fen = $('#fen');
     var $pgn = $('#pgn');
-    var project_id = { project_id }};
-    var chess_color = "{{ chess_color }}";
+
+    var project_id = "{{ project_id }}";
+    var chess_color = "{{ color }}";
+    var game_id = "{{game_id}}";
+
+    {% if pgn %}
+      game.load_pgn('{{pgn}}');
+    {% endif %}
+
+    {% if white %}
+      game.header('White','{{white}}');
+    {% endif %}
+
+   {% if black %}
+      game.header('Black','{{black}}');
+    {% endif %}
 
     var config = {
         draggable: true,
