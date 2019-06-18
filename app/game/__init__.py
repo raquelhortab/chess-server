@@ -1,6 +1,7 @@
 import json
 import re
 import random
+import chess
 from functools import partial
 
 import socketIO_client
@@ -33,10 +34,23 @@ class GameNamespace(Namespace):
         emit("updated_pgn", chess_game_pgn, room=data["game_id"])
 
     def on_connect(self):
-        game_id = re.match(r'^.*/([A-Za-z0-9]{1}).*$', request.referrer).group(1)
+        game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
         join_room(game_id)
         current_app.logger.error("on connect")
 
+    def on_make_move(self, data):
+        current_app.logger.error("on_make_move")
+        source = data["source"]
+        target = data["target"]
+        pc_id = data["pc_id"]
+        color = data["color"]
+        fen = str(data["fen"])
+        board = chess.Board(fen)
+        if board.is_legal(chess.Move.from_uci(source+target)):
+            self.redis.set(data["game_id"], data["pgn"])
+            emit("updated_pgn", data["pgn"], room=data["game_id"])
+        else:
+            emit("updated_pgn", data["pgn"], room=data["game_id"])
 
     ##########################################################################################
 

@@ -1,3 +1,4 @@
+
 <link href="/chess/css/chessboard-1.0.0.css" rel="stylesheet" />
 
 <div>
@@ -12,7 +13,7 @@
 
 
 <script src="/chess/js/socket.io-1.7.3.min.js"></script>
-<script src="/chess/js/jquery-3.1.1.min.js"></script>
+<script src="/chess/js/jquery-3.4.1.min.js"></script>
 <script src="/chess/js/chessboard-1.0.0.min.js"></script>
 <script src="/chess/js/chess-0.10.2.min.js"></script>
 <script src="/chess/js/app.js"></script>
@@ -23,29 +24,31 @@
     var board = null;
     var game = new Chess();
 
-    var $status = $('#status');
-    var $fen = $('#fen');
-    var $pgn = $('#pgn');
+    var $status_div = $('#status');
+    var $fen_div = $('#fen');
+    var $pgn_div = $('#pgn');
 
     var project_id = "{{ project_id }}";
-    var chess_color = "{{ color }}";
+    var color = "{{ color }}";
     var game_id = "{{game_id}}";
-
-    {% if pgn %}
-      game.load_pgn('{{pgn}}');
-    {% endif %}
+    var white_id = null;
+    var black_id = null;
 
     {% if white %}
+      white_id = {{white}};
       game.header('White','{{white}}');
     {% endif %}
 
    {% if black %}
+      black_id = {{black}};
       game.header('Black','{{black}}');
     {% endif %}
 
+    game.header('Event', '{{game_id}}');
+
     var config = {
         draggable: true,
-        position: game.fen(),
+        position: 'start',
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd
@@ -53,6 +56,11 @@
 
     board = Chessboard('myBoard', config);
 
+    board.position(game.fen());
+
     updateStatus();
+
+    parent.document.getElementById("chess_frame").onload();
+
 
 </script>
