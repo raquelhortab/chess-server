@@ -15,6 +15,7 @@ from redlock import RedLock
 from app.impact_map import ImpactMap
 from app.karel import DyingException, Karel
 from app.karel_model import KarelModel
+from app.chess_game import ChessGame
 
 messaging = Blueprint('messaging', __name__)
 
@@ -25,32 +26,65 @@ class GameNamespace(Namespace):
         super(GameNamespace, self).__init__(namespace)
         self.redis = redis
 
-    def on_update_pgn(self, data):
-        current_app.logger.error("on_update_pgn")
-        self.redis.set(data["game_id"], data["pgn"])
-
-    def on_get_pgn(self, data):
-        chess_game_pgn = self.redis.get(data["game_id"])
-        emit("updated_pgn", chess_game_pgn, room=data["game_id"])
-
     def on_connect(self):
         game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
         join_room(game_id)
         current_app.logger.error("on connect")
 
     def on_make_move(self, data):
-        current_app.logger.error("on_make_move")
-        source = data["source"]
-        target = data["target"]
-        pc_id = data["pc_id"]
-        color = data["color"]
-        fen = str(data["fen"])
-        board = chess.Board(fen)
-        if board.is_legal(chess.Move.from_uci(source+target)):
-            self.redis.set(data["game_id"], data["pgn"])
-            emit("updated_pgn", data["pgn"], room=data["game_id"])
-        else:
-            emit("updated_pgn", data["pgn"], room=data["game_id"])
+        if self.redis.exists(data["game_id"]):
+            chess_game = ChessGame()
+            chess_game.load(self.redis.get(data["game_id"]))
+            current_app.logger.error("on_make_move: from " + str(data["source"]) + " to " + str(data["target"]))
+            current_app.logger.error("fen: " + str(data["fen"]))
+            current_app.logger.error("new pgn: " + str(data["pgn"]))
+            board = chess.Board(chess_game.fen)
+            move = chess.Move.from_uci(data["source"] + data["target"])
+            current_app.logger.error("chess.Move: " + str(move))
+            current_app.logger.error("legal moves: " + str(board.legal_moves))
+            if move in board.legal_moves:
+                chess_game.pgn = data["pgn"]
+                self.redis.set(data["game_id"], json.dumps(chess_game.to_json()))
+                emit("move_resolution", {"pgn": chess_game.pgn, "legal_move": True}, room=data["game_id"])
+            else:
+                emit("move_resolution", {"pgn": chess_game.pgn, "legal_move": False}, room=data["game_id"])
+
+        # def on_update_pgn(self, data):
+        #     chess_game = ChessGame()
+        #     chess_game.load(self.redis.get(data["game_id"]))
+        #     chess_game.pgn = data["pgn"]
+        #     self.redis.set(data["game_id"], json.dumps(chess_game.to_json()))
+        #     current_app.logger.error("on_update_pgn" + str(chess_game))
+        #
+        # def on_get_pgn(self, data):
+        #     chess_game = ChessGame()
+        #     chess_game.load(self.redis.get(data["game_id"]))
+        #     emit("updated_pgn", chess_game.pgn, room=data["game_id"])
+        #     current_app.logger.error("on_get_pgn: " + str(chess_game))
+        #
+        # def on_connect(self):
+        #     game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
+        #     join_room(game_id)
+        #     current_app.logger.error("on connect")
+
+    # def on_update_pgn(self, data):
+    #     current_app.logger.error("on_update_pgn")
+    #     chess_game = ChessGame()
+    #     if self.redis.exists(data["game_id"]):
+    #         chess_game.load(self.redis.get(data["game_id"]))
+    #     chess_game.pgn = data["pgn"]
+    #     chess_game.fen = data["fen"]
+    #     current_app.logger.error(str(chess_game))
+    #     self.redis.set(data["game_id"], json.dumps(chess_game.to_json()))
+
+    def on_get_pgn(self, data):
+        if self.redis.exists(data["game_id"]):
+            chess_game = ChessGame()
+            chess_game.load(self.redis.get(data["game_id"]))
+            emit("updated_pgn", {"pgn": chess_game.pgn}, room=data["game_id"])
+            current_app.logger.error("on_get_pgn: " + str(chess_game))
+
+
 
     ##########################################################################################
 

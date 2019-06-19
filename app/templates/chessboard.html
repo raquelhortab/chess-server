@@ -21,12 +21,18 @@
 
 <script>
 
-    var board = null;
-    var game = new Chess();
 
     var $status_div = $('#status');
     var $fen_div = $('#fen');
     var $pgn_div = $('#pgn');
+
+
+    var board = null;
+    var game = new Chess();
+
+    {% if pgn %}
+      game.load_pgn('{{pgn}}');
+    {% endif %}
 
     var project_id = "{{ project_id }}";
     var color = "{{ color }}";
