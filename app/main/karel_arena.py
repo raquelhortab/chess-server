@@ -45,6 +45,7 @@ def chessboard(game_id):
         current_app.logger.error(str("   Player {} is color {}").format(str(pc_id),str(color)))
     redis.set(game_id, json.dumps(chess_game.to_json()))
     current_app.logger.error("CHESSBOARD VIEW: " + str(chess_game))
+    current_app.logger.error("type: " + str(type(chess_game.get_player_id("w"))) + str(type(chess_game.get_player_id("b"))))
     return render_template('chessboard.html', color=color, white=chess_game.get_player_id("w"), black=chess_game.get_player_id("b"), game_id=game_id, pgn=chess_game.pgn)
 
 #

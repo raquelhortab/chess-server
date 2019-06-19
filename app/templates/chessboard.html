@@ -31,7 +31,7 @@
     var game = new Chess();
 
     {% if pgn %}
-      game.load_pgn('{{pgn}}');
+      game.load_pgn(`{{pgn | safe}}`);
     {% endif %}
 
     var project_id = "{{ project_id }}";
@@ -39,18 +39,6 @@
     var game_id = "{{game_id}}";
     var white_id = null;
     var black_id = null;
-
-    {% if white %}
-      white_id = {{white}};
-      game.header('White','{{white}}');
-    {% endif %}
-
-   {% if black %}
-      black_id = {{black}};
-      game.header('Black','{{black}}');
-    {% endif %}
-
-    game.header('Event', '{{game_id}}');
 
     var config = {
         draggable: true,

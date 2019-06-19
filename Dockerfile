@@ -8,10 +8,11 @@ ENV REDIS_URL=127.0.0.1
 
 RUN sed -i.bak -r 's/(archive|security).ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y python3 python-pip gunicorn supervisor git nginx redis-server
+RUN apt-get install -y python3 gunicorn supervisor git nginx redis-server
+RUN apt-get install python3-pip  -y && pip3 install --no-cache-dir --upgrade pip
 
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+RUN pip3 install -r /tmp/requirements.txt
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY karel-arena.conf /etc/nginx/sites-available/

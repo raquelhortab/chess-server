@@ -36,7 +36,7 @@ class GameNamespace(Namespace):
             chess_game = ChessGame()
             chess_game.load(self.redis.get(data["game_id"]))
             current_app.logger.error("on_make_move: from " + str(data["source"]) + " to " + str(data["target"]))
-            current_app.logger.error("fen: " + str(data["fen"]))
+            current_app.logger.error("fen: " + chess_game.fen)
             current_app.logger.error("new pgn: " + str(data["pgn"]))
             board = chess.Board(chess_game.fen)
             move = chess.Move.from_uci(data["source"] + data["target"])
@@ -44,9 +44,12 @@ class GameNamespace(Namespace):
             current_app.logger.error("legal moves: " + str(board.legal_moves))
             if move in board.legal_moves:
                 chess_game.pgn = data["pgn"]
+                chess_game.fen = data["fen"]
+                current_app.logger.error(chess_game.pgn)
                 self.redis.set(data["game_id"], json.dumps(chess_game.to_json()))
                 emit("move_resolution", {"pgn": chess_game.pgn, "legal_move": True}, room=data["game_id"])
             else:
+                current_app.logger.error(chess_game.pgn)
                 emit("move_resolution", {"pgn": chess_game.pgn, "legal_move": False}, room=data["game_id"])
 
         # def on_update_pgn(self, data):
