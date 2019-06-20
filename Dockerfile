@@ -6,7 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ENV REDIS_URL=127.0.0.1
 
-#RUN sed -i.bak -r 's/(archive|security).ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y python3 gunicorn supervisor git nginx redis-server
 RUN apt-get install python3-pip  -y && pip3 install --no-cache-dir --upgrade pip

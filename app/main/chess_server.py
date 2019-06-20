@@ -1,21 +1,12 @@
-import json
-import os
-import ast
 import chess
 import chess.pgn
 import io
 
 from flask import current_app
-from flask import flash
-from flask import render_template, send_from_directory
-from flask import request, jsonify
-import datetime
-from werkzeug.utils import redirect
+from flask import render_template
+from flask import request
 
-from app import game, redis
-from app.impact_map import ImpactMap
-from app.chess_game import ChessGame
-from app.main.forms import GameForm
+from app import redis
 from . import main
 
 
@@ -70,35 +61,3 @@ def get_player_color(game, player_id):
     if str(game.headers["Black"]) == str(player_id):
         return "b"
     return None
-
-# def old_chessboard(game_id):
-#     current_app.logger.error("chessboard, game_id: " + str(game_id))
-#     pc_id = request.args.get('pc_id')
-#     chess_game = ChessGame()
-#     # Existing game
-#     if redis.exists(game_id):
-#         current_app.logger.error("   Existing game")
-#         chess_game.load(redis.get(game_id))
-#         # if new player
-#         if not chess_game.get_player_color(pc_id):
-#             current_app.logger.error("       New player")
-#             # if empty seat
-#             if not chess_game.get_player_id("b"):
-#                 chess_game.set_player_id("b", pc_id)
-#             # if game full
-#             else:
-#                 return "404"
-#         color = chess_game.get_player_color(pc_id)
-#         current_app.logger.error(str("   Player {} is color {}").format(str(pc_id),str(color)))
-#     # New game
-#     else:
-#         current_app.logger.error("   New game")
-#         chess_game.set_player_id("w", pc_id)
-#         chess_game.set_event(game_id)
-#         color = "w"
-#         current_app.logger.error(str("   Player {} is color {}").format(str(pc_id),str(color)))
-#     redis.set(game_id, json.dumps(chess_game.to_json()))
-#     current_app.logger.error("CHESSBOARD VIEW: " + str(chess_game))
-#     current_app.logger.error("type: " + str(type(chess_game.get_player_id("w"))) + str(type(chess_game.get_player_id("b"))))
-#     return render_template('chessboard.html', color=color, white=chess_game.get_player_id("w"), black=chess_game.get_player_id("b"), game_id=game_id, pgn=chess_game.pgn)
-#
