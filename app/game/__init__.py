@@ -1,4 +1,5 @@
 import json
+import io
 import re
 import random
 import chess
@@ -15,7 +16,7 @@ from redlock import RedLock
 from app.impact_map import ImpactMap
 from app.karel import DyingException, Karel
 from app.karel_model import KarelModel
-from app.chess_game import ChessGame
+from app.chess_game_old import ChessGame
 
 messaging = Blueprint('messaging', __name__)
 
@@ -26,12 +27,51 @@ class GameNamespace(Namespace):
         super(GameNamespace, self).__init__(namespace)
         self.redis = redis
 
+    def load_game(self, game_id):
+        game_data = self.redis.get(game_id)
+        stringIO = io.StringIO(game_data.decode("utf-8"))
+        chess_game = chess.pgn.read_game(stringIO)
+        return chess_game
+
     def on_connect(self):
         game_id = re.match(r'^.*/([A-Za-z0-9]{6}).*$', request.referrer).group(1)
         join_room(game_id)
         current_app.logger.error("on connect")
 
     def on_make_move(self, data):
+        current_app.logger.error("on_make_move")
+        current_app.logger.error(data["source"] + data["target"])
+        if not data["target"] or not data["source"] or not data["game_id"]:
+            return 404
+        if self.redis.exists(data["game_id"]):
+            chess_game = self.load_game(data["game_id"])
+            current_app.logger.error(str(chess_game))
+            new_move = chess.Move.from_uci(data["source"] + data["target"])
+            board = chess_game.board()
+            for move in chess_game.mainline_moves():
+                board.push(move)
+            current_app.logger.error(str(board.fen()))
+            current_app.logger.error(str(board.legal_moves))
+            if new_move in board.legal_moves:
+                current_app.logger.error("LEGAL")
+                board.push(new_move)
+                current_app.logger.error(str(chess_game.variations))
+                new_game = chess.pgn.Game.from_board(board)
+                new_game.headers = chess_game.headers
+                self.redis.set(data["game_id"], str(new_game))
+                current_app.logger.error(str(new_game))
+                emit("move_resolution", {"fen": board.fen(), "legal_move": True}, room=data["game_id"])
+                if board.is_checkmate():
+                    if board.result() == "1-0":
+                        winner = chess_game.get_player_id("w")
+                    if board.result() == "0-1":
+                        winner = chess_game.get_player_id("b")
+                    emit("game_finished", {"pgn": chess_game.pgn, "winner": winner}, room=data["game_id"])
+            else:
+                current_app.logger.error("ILLEGAL")
+                emit("move_resolution", {"fen": board.fen(), "legal_move": False}, room=data["game_id"])
+
+    def on_make_move_old(self, data):
         if self.redis.exists(data["game_id"]):
             chess_game = ChessGame()
             chess_game.load(self.redis.get(data["game_id"]))
@@ -61,25 +101,25 @@ class GameNamespace(Namespace):
                 current_app.logger.error(chess_game.pgn)
                 emit("move_resolution", {"pgn": chess_game.pgn, "legal_move": False}, room=data["game_id"])
 
-    def on_get_pgn(self, data):
-        if self.redis.exists(data["game_id"]):
-            chess_game = ChessGame()
-            chess_game.load(self.redis.get(data["game_id"]))
-            emit("updated_pgn", {"pgn": chess_game.pgn}, room=data["game_id"])
-            current_app.logger.error("on_get_pgn: " + str(chess_game))
-
-    def on_finish_game(self, data):
-        if self.redis.exists(data["game_id"]):
-            chess_game = ChessGame()
-            chess_game.load(self.redis.get(data["game_id"]))
-            board = chess.Board(chess_game.fen)
-            winner = None
-            if board.is_checkmate():
-                if board.result() == "1-0":
-                    winner = chess_game.get_player_id("w")
-                if board.result() == "0-1":
-                    winner = chess_game.get_player_id("b")
-                emit("game_finished", {"pgn": chess_game.pgn, "winner": winner}, room=data["game_id"])
+    # def on_get_pgn(self, data):
+    #     if self.redis.exists(data["game_id"]):
+    #         chess_game = ChessGame()
+    #         chess_game.load(self.redis.get(data["game_id"]))
+    #         emit("updated_pgn", {"pgn": chess_game.pgn}, room=data["game_id"])
+    #         current_app.logger.error("on_get_pgn: " + str(chess_game))
+    #
+    # def on_finish_game(self, data):
+    #     if self.redis.exists(data["game_id"]):
+    #         chess_game = ChessGame()
+    #         chess_game.load(self.redis.get(data["game_id"]))
+    #         board = chess.Board(chess_game.fen)
+    #         winner = None
+    #         if board.is_checkmate():
+    #             if board.result() == "1-0":
+    #                 winner = chess_game.get_player_id("w")
+    #             if board.result() == "0-1":
+    #                 winner = chess_game.get_player_id("b")
+    #             emit("game_finished", {"pgn": chess_game.pgn, "winner": winner}, room=data["game_id"])
 
     def on_load_example_game(self, data):
         if self.redis.exists(data["game_id"]):
