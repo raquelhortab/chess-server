@@ -6,7 +6,7 @@ from flask import current_app
 class ChessGame:
 
     def __init__(self):
-        self.pgn = '[White ""][Black ""][Event " "]'
+        self.pgn = '[White ""]\n[Black ""]\n[Event " "]\n'
         self.fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
     def __str__(self):

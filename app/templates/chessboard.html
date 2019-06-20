@@ -1,15 +1,23 @@
 
+<link href="/chess/css/bootstrap.min.css" rel="stylesheet" />
+<link href="/chess/css/bootstrap-responsive.min.css" rel="stylesheet" />
 <link href="/chess/css/chessboard-1.0.0.css" rel="stylesheet" />
 
-<div>
-  <div id="myBoard" style="width: 400px"></div>
-  <label>Status:</label>
-  <div id="status"></div>
-  <label>FEN:</label>
-  <div id="fen"></div>
-  <label>PGN:</label>
-  <div id="pgn"></div>
+<div style="padding-top: 20px;">
+
+  <div class="" id="chessBoard" style="width: 450px;display: inline-block; margin-right:20px; margin-bottom:20px;"></div>
+  <div class="alert" id="chessInfo" style="width: 400px;display: inline-block; vertical-align:top; visibility:hidden"></div>
+
 </div>
+
+<div style="display:none;">
+    <label>Status:</label>
+    <div id="status"></div>
+    <label>FEN:</label>
+    <div id="fen"></div>
+    <label>PGN:</label>
+    <div id="pgn"></div>
+  </div>
 
 
 <script src="/chess/js/socket.io-1.7.3.min.js"></script>
@@ -19,8 +27,8 @@
 <script src="/chess/js/app.js"></script>
 
 
-<script>
 
+<script>
 
     var $status_div = $('#status');
     var $fen_div = $('#fen');
@@ -48,7 +56,7 @@
         onSnapEnd: onSnapEnd
     };
 
-    board = Chessboard('myBoard', config);
+    board = Chessboard('chessBoard', config);
 
     board.position(game.fen());
 
