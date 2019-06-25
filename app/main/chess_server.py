@@ -38,14 +38,25 @@ def chessboard(game_id):
         current_app.logger.error("   New game")
         chess_game.headers["White"] = str(pc_id)
         chess_game.headers["Event"] = str(game_id)
-        color = "w"
+        color = "White"
         current_app.logger.error(str("   Player {} is color {}").format(str(pc_id), str(color)))
     redis.set(game_id, str(chess_game))
     board = chess_game.board()
     for move in chess_game.mainline_moves():
         board.push(move)
     current_app.logger.error(str(board.fen()))
-    return render_template('chessboard.html', color=color, white=chess_game.headers["White"], black=chess_game.headers["Black"], game_id=game_id, pgn=str(chess_game), fen=str(board.fen()))
+    turn = "White" if board.turn else "Black"
+    if board.is_checkmate() or board.is_stalemate():
+        if board.result() == "1-0":
+            winner = chess_game.headers["White"]
+        if board.result() == "0-1":
+            winner = chess_game.headers["Black"]
+        else:
+            winner = ""
+        return render_template('chessboard.html', color=color, white=chess_game.headers["White"],black=chess_game.headers["Black"], game_id=game_id, pgn=str(chess_game),fen=str(board.fen()), turn=turn, game_over=True, winner=winner)
+    else:
+        return render_template('chessboard.html', color=color, white=chess_game.headers["White"], black=chess_game.headers["Black"], game_id=game_id, pgn=str(chess_game), fen=str(board.fen()), turn=turn, game_over=False, winner=None)
+
 
 def load_game(game_id):
     game_data = redis.get(game_id)
@@ -53,11 +64,12 @@ def load_game(game_id):
     chess_game = chess.pgn.read_game(stringIO)
     return chess_game
 
+
 def get_player_color(game, player_id):
     if not player_id:
         return None
     if str(game.headers["White"]) == str(player_id):
-        return "w"
+        return "White"
     if str(game.headers["Black"]) == str(player_id):
-        return "b"
+        return "Black"
     return None

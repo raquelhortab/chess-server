@@ -1,5 +1,5 @@
 # docker build -t chess-server .
-# sudo docker run -p 80:80 -it karel-arena
+# sudo docker run -p 80:80 -it chess-server
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,8 +14,8 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
 RUN rm /etc/nginx/sites-enabled/default
-COPY karel-arena.conf /etc/nginx/sites-available/
-RUN ln -s /etc/nginx/sites-available/karel-arena.conf /etc/nginx/sites-enabled/karel-arena.conf
+COPY chess-server.conf /etc/nginx/sites-available/
+RUN ln -s /etc/nginx/sites-available/chess-server.conf /etc/nginx/sites-enabled/chess-server.conf
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 RUN mkdir -p /var/log/supervisor

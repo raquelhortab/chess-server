@@ -42,7 +42,6 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    # TODO: check this
     socketio.on_namespace(GameNamespace(redis, '/game'))
 
     return app, socketio

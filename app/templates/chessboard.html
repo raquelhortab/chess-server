@@ -5,9 +5,11 @@
 
 <div style="padding-top: 20px;">
 
-  <div class="" id="chessBoard" style="width: 450px;display: inline-block; margin-right:20px; margin-bottom:20px;"></div>
-  <div class="alert" id="chessInfo" style="width: 400px;display: inline-block; vertical-align:top; visibility:hidden"></div>
-
+    <div class="" id="chessBoard" style="width: 450px;display: inline-block; margin-right:20px; margin-bottom:20px;"></div>
+    <div style="width: 400px;display: inline-block; vertical-align:top;">
+        <div class="alert alert-info" id="turnInfo"></div>
+        <div class="alert" id="chessInfo" style="visibility:hidden"></div>
+    </div>
 </div>
 
 <div style="display:none;">
@@ -17,7 +19,7 @@
     <div id="fen"></div>
     <label>PGN:</label>
     <div id="pgn"></div>
-  </div>
+</div>
 
 
 <script src="/chess/js/socket.io-1.7.3.min.js"></script>
@@ -36,6 +38,7 @@
 
 
     var board = null;
+    var turn = "{{turn}}";
 
     var color = "{{ color }}";
     var game_id = "{{game_id}}";
@@ -43,14 +46,33 @@
     var config = {
         draggable: true,
         position: '{{fen}}',
-        //onDragStart: onDragStart,
         onDrop: onDrop,
-        //onSnapEnd: onSnapEnd
+        onDragStart: onDragStart,
     };
 
     board = Chessboard('chessBoard', config);
 
     parent.document.getElementById("chess_frame").onload();
 
+    {% if game_over%}
+        var game_over = false;
+        console.log("game_finished");
+        var winner = "{{winner}}";
+        var fen = "{{fen}}";
+        var pgn = `{{pgn}}`;
+        if(winner == parent.pc_id.toString()){
+            show_info(parent.won_text, "alert alert-success");
+        }
+        else if(winner == ""){
+            show_info(parent.tie_text, "alert alert-warning");
+        }
+        else{
+            show_info(parent.lost_text, "alert alert-error");
+        }
+        parent.document.getElementById("chess_frame").onload();
+        parent.finish_game(pgn,winner,false);
+    {% else %}
+        var game_over = false;
+    {% endif %}
 
 </script>
