@@ -1,3 +1,5 @@
+#! project moved to another repository -> this is not updated
+
 # chess-server
 
 ## Build the docker container
