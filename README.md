@@ -1,4 +1,4 @@
-#! project moved to another repository -> this is not updated
+# project moved to another repository -> this is not updated!
 
 # chess-server
 
